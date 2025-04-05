@@ -24,10 +24,6 @@ export default tseslint.config(
       ...react.configs["jsx-runtime"].rules,
       ...reactHooks.configs.recommended.rules,
       "react/jsx-no-target-blank": ["error", { enforceDynamicLinks: "always" }],
-      "react-refresh/only-export-components": [
-        "error",
-        { allowConstantExport: true },
-      ],
       "react/no-unstable-nested-components": ["error", { allowAsProps: true }],
       "prefer-arrow-callback": [
         "error",
