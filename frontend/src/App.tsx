@@ -1,15 +1,12 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Navigate, Route, Routes } from "react-router";
+import Login from "./pages/Login";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <Button onClick={() => setCount((count) => count + 1)} variant="outline">
-        count is {count}
-      </Button>
-    </>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Navigate to="/login" />} />
+    </Routes>
   );
 }
 
