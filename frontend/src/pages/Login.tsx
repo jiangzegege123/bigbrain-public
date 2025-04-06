@@ -49,15 +49,6 @@ export default function Login() {
               />
             </div>
           </div>
-
-          <div className="text-right">
-            <Link
-              href="/forgot-password"
-              className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
