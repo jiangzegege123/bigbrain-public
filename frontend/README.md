@@ -48,10 +48,3 @@ export default tseslint.config({
   },
 });
 ```
-
-## Bonus Implementation Notes
-
-- Implemented redirection logic:
-  - If a user is already logged in, visiting `/login` or `/register` will redirect them to `/dashboard`.
-  - If a user is not logged in, visiting protected routes like `/dashboard` will redirect them to `/login`.
-- This improves user experience and ensures route protection.
