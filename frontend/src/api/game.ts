@@ -64,3 +64,30 @@ export const deleteQuestion = async (
   });
   return res;
 };
+
+export const updateQuestion = async (
+  token: string,
+  gameId: string,
+  questionId: number,
+  updates: object
+) => {
+  return await apiFetch(`/admin/quiz/${gameId}/question/${questionId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
+  });
+};
+
+export const fetchSingleQuestion = async (
+  token: string,
+  gameId: string,
+  questionId: string
+) => {
+  return await apiFetch(`/admin/quiz/${gameId}/question/${questionId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};

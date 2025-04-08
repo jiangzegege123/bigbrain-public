@@ -59,7 +59,7 @@ const QuestionEdit = () => {
 
   const handleSave = async () => {
     try {
-      await updateQuestion(token!, gameId!, questionId!, {
+      await updateQuestion(token!, gameId!, Number(questionId)!, {
         type,
         question: questionText,
         duration,
