@@ -6,16 +6,9 @@ import { fetchGames, createGame } from "@/api/game";
 import Navbar from "@/components/NavBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import {
-  PlusCircle,
-  Clock,
-  HelpCircle,
-  Search,
-  Gamepad2,
-  X,
-} from "lucide-react";
-import type { Game, Question } from "@/types/index";
+import { PlusCircle, Gamepad2, X } from "lucide-react";
+import type { Game } from "@/types/index";
+import GameCard from "@/components/game/GameCard";
 
 const Dashboard = () => {
   const { token } = useAuth();
@@ -23,7 +16,6 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [newGameName, setNewGameName] = useState("");
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -53,20 +45,13 @@ const Dashboard = () => {
     }
   };
 
-  // Filter games based on search term
-  const filteredGames = searchTerm
-    ? games.filter((game) =>
-        game.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : games;
-
   return (
     <>
       <Navbar />
 
       <div className="bg-gray-50 min-h-screen p-6">
-        {/* Header with search and "Add Game" button */}
         <div className="container mx-auto">
+          {/* Header with title and add button */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Your Games</h1>
@@ -74,92 +59,36 @@ const Dashboard = () => {
                 Manage and create interactive quiz games
               </p>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search games..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full sm:w-[200px]"
-                />
-              </div>
-              <Button
-                onClick={() => setShowModal(true)}
-                className="flex items-center gap-2"
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span>Add Game</span>
-              </Button>
-            </div>
+            <Button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-2"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span>Add Game</span>
+            </Button>
           </div>
 
-          {/* Game list grid */}
+          {/* Game list */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGames.map((game) => (
-              <Link
-                to={`/game/${game.id}`}
-                key={game.id}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow hover:shadow-md transition group"
-              >
-                <div className="relative h-40 w-full overflow-hidden bg-gray-100">
-                  {game.thumbnail ? (
-                    <img
-                      src={game.thumbnail || "/placeholder.svg"}
-                      alt={`${game.name} thumbnail`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center">
-                      <Gamepad2 className="h-12 w-12 text-gray-300" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <h2 className="text-lg font-semibold mb-2">{game.name}</h2>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <HelpCircle className="h-4 w-4" />
-                      <span>{game.questions.length} Questions</span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        {game.questions.reduce(
-                          (sum: number, q: Question) => sum + q.duration,
-                          0
-                        )}{" "}
-                        seconds
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+            {games.map((game) => (
+              <GameCard key={game.id} game={game} />
             ))}
           </div>
 
-          {/* Empty state */}
-          {filteredGames.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
+          {/* Empty state when no games */}
+          {games.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm mt-10">
               <Gamepad2 className="h-12 w-12 mx-auto text-gray-300 mb-4" />
               <h2 className="text-xl font-semibold text-gray-700 mb-2">
                 No games found
               </h2>
               <p className="text-gray-500 mb-6">
-                {searchTerm
-                  ? "Try a different search term"
-                  : "Create your first game to get started"}
+                Create your first game to get started
               </p>
-              {!searchTerm && (
-                <Button onClick={() => setShowModal(true)}>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Create Game
-                </Button>
-              )}
+              <Button onClick={() => setShowModal(true)}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Game
+              </Button>
             </div>
           )}
         </div>
