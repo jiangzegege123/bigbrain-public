@@ -31,6 +31,12 @@ const Dashboard = () => {
   // Handle new game creation
   const handleCreateGame = async (name: string) => {
     try {
+      // Step 1: Fetch current games
+      const { games: currentGames }: { games: Game[] } = await fetchGames(
+        token!
+      );
+
+      // Step 2: Generate new game
       const newId = Math.floor(Math.random() * 1_000_000_000);
       const newGame: Game = {
         id: newId,
@@ -39,14 +45,32 @@ const Dashboard = () => {
         questions: [],
       };
 
-      const games: Game[] = [newGame];
-      console.log(token);
-      console.log(games);
-      await updateGames(token!, games);
+      // Step 3: Add new game to existing list
+      const updatedGames: Game[] = [...currentGames, newGame];
 
-      setGames(games);
+      // Step 4: Update backend
+      await updateGames(token!, updatedGames);
+
+      // Step 5: Update local state
+      setGames(updatedGames);
       setShowModal(false);
       setError("");
+    } catch (err) {
+      if (err instanceof Error) setError(err.message);
+      else setError("An unexpected error occurred.");
+    }
+  };
+
+  //Handle delete a game
+  const handleDeleteGame = async (id: number) => {
+    try {
+      const { games: currentGames }: { games: Game[] } = await fetchGames(
+        token!
+      );
+      const updatedGames = currentGames.filter((game) => game.id !== id);
+      console.log(updatedGames);
+      await updateGames(token!, updatedGames);
+      setGames(updatedGames);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError("An unexpected error occurred.");
@@ -79,7 +103,7 @@ const Dashboard = () => {
           {/* Game list */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {games.map((game) => (
-              <GameCard key={game.id} game={game} />
+              <GameCard key={game.id} game={game} onDelete={handleDeleteGame} />
             ))}
           </div>
 
