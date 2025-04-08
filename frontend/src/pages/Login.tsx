@@ -26,7 +26,7 @@ const Login = () => {
     setErrorMsg("");
     try {
       const data = await adminLogin(email, password);
-      login(data.token);
+      login(data.token, email);
       navigate("/dashboard");
     } catch (err: unknown) {
       if (err instanceof Error) {

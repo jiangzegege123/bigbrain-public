@@ -17,9 +17,10 @@ export interface Question {
 export interface Game {
   id: number;
   name: string;
-  thumbnail: string;
   owner: string;
-  active: number;
-  createdAt: string;
   questions: Question[];
+
+  active?: number;
+  thumbnail?: string;
+  createdAt?: string;
 }

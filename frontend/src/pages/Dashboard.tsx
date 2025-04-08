@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchGames, createGame } from "@/api/game";
+import { fetchGames, updateGames } from "@/api/game";
 import Navbar from "@/components/NavBar";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -10,10 +10,9 @@ import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
 
 const Dashboard = () => {
-  const { token } = useAuth();
+  const { token, email } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [newGameName, setNewGameName] = useState("");
   const [error, setError] = useState("");
 
   // Fetch all games when token changes
@@ -30,13 +29,23 @@ const Dashboard = () => {
   }, [token]);
 
   // Handle new game creation
-  const handleCreateGame = async () => {
+  const handleCreateGame = async (name: string) => {
     try {
-      await createGame(token!, newGameName);
-      const updated = await fetchGames(token!);
-      setGames(updated.games);
+      const newId = Math.floor(Math.random() * 1_000_000_000);
+      const newGame: Game = {
+        id: newId,
+        name,
+        owner: email!,
+        questions: [],
+      };
+
+      const games: Game[] = [newGame];
+      console.log(token);
+      console.log(games);
+      await updateGames(token!, games);
+
+      setGames(games);
       setShowModal(false);
-      setNewGameName("");
       setError("");
     } catch (err) {
       if (err instanceof Error) setError(err.message);

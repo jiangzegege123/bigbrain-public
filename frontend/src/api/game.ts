@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/utils";
+import { Game } from "@/types";
 
 export const fetchGames = async (token: string) => {
   return await apiFetch("/admin/games", {
@@ -8,13 +9,15 @@ export const fetchGames = async (token: string) => {
   });
 };
 
-export const createGame = async (token: string, name: string) => {
-  return apiFetch("/admin/quiz", {
-    method: "POST",
+// Update the list of games via PUT /admin/games
+export const updateGames = async (token: string, games: Game[]) => {
+  console.log(token);
+  return await apiFetch("/admin/games", {
+    method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ games }),
   });
 };
 
