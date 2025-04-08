@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { apiFetch } from "@/lib/utils";
+import { adminLogin } from "@/api/user";
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -25,10 +25,7 @@ export default function Login() {
     e.preventDefault();
     setErrorMsg("");
     try {
-      const data = await apiFetch("/admin/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await adminLogin(email, password);
       login(data.token);
       navigate("/dashboard");
     } catch (err: unknown) {
@@ -116,4 +113,6 @@ export default function Login() {
       </Card>
     </div>
   );
-}
+};
+
+export default Login;

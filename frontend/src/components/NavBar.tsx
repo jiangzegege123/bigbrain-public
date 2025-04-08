@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-export default function Navbar() {
+const Navbar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -19,4 +19,6 @@ export default function Navbar() {
       </Button>
     </header>
   );
-}
+};
+
+export default Navbar;

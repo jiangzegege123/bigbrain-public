@@ -9,12 +9,12 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { apiFetch } from "@/lib/utils";
+import { adminRegister } from "@/api/user";
 import { Label } from "@/components/ui/label";
 import { AtSign, User, Lock, KeyRound, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function Register() {
+const Register = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +33,7 @@ export default function Register() {
     }
 
     try {
-      const data = await apiFetch("/admin/auth/register", {
-        method: "POST",
-        body: JSON.stringify({ email, name, password }),
-      });
+      const data = await adminRegister(email, name, password);
       login(data.token);
       navigate("/dashboard");
     } catch (err: unknown) {
@@ -161,4 +158,6 @@ export default function Register() {
       </Card>
     </div>
   );
-}
+};
+
+export default Register;

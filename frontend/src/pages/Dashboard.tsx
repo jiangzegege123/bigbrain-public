@@ -2,24 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchGames } from "@/lib/utils";
 import Navbar from "@/components/NavBar";
-import type { Game, Question } from "@/types/index";
-
-export default function Dashboard() {
-  const { token } = useAuth();
-  const [games, setGames] = useState<Game[]>([]);
-
-  useEffect(() => {
-    const loadGames = async () => {
-      try {
-        const data = await fetchGames(token!);
-        setGames(data.games);
-      } catch (err) {
-        console.error("Failed to fetch games", err);
-      }
-    };
-    loadGames();
-  }, [token]);
-
+const Dashboard = () => {
   return (
     <>
       <Navbar />
@@ -45,4 +28,6 @@ export default function Dashboard() {
       </div>
     </>
   );
-}
+};
+
+export default Dashboard;
