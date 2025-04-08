@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { apiFetch } from "@/utils/api";
+import { apiFetch } from "@/lib/utils";
 import {
   Card,
   CardContent,

@@ -9,7 +9,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { apiFetch } from "@/utils/api";
+import { apiFetch } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { AtSign, User, Lock, KeyRound, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";

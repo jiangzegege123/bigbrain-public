@@ -1,6 +1,25 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
+}
+
+export async function apiFetch(endpoint: string, options = {}) {
+  const res = await fetch(`http://localhost:5005${endpoint}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Unknown error");
+  return data;
+}
+
+export async function fetchGames(token: string) {
+  return await apiFetch("/admin/games", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 }
