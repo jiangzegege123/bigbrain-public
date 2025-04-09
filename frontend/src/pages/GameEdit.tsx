@@ -1,3 +1,23 @@
+"use client";
+
+import { useParams } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { fetchGames, updateGames } from "@/api/game";
+import type { Game, Question } from "@/types/index";
+import { Link } from "react-router-dom";
+import Navbar from "@/components/NavBar";
+import {
+  PlusCircle,
+  Edit2,
+  Trash2,
+  HelpCircle,
+  Clock,
+  Award,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 const GameEdit = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { token } = useAuth();
@@ -52,7 +72,7 @@ const GameEdit = () => {
   const handleDelete = async (questionId: number) => {
     try {
       const { games } = await fetchGames(token!);
-      const updatedGames = games.map((g) => {
+      const updatedGames = games.map((g: Game) => {
         if (g.id.toString() !== gameId) return g;
 
         // 删除该 game 中 id 匹配的 question
@@ -99,7 +119,7 @@ const GameEdit = () => {
             </div>
             <Button
               onClick={handleAdd}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-gray-700 hover:bg-gray-800 text-white"
             >
               <PlusCircle className="mr-2 h-5 w-5" />
               Add New Question
@@ -124,7 +144,7 @@ const GameEdit = () => {
             </p>
             <Button
               onClick={handleAdd}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-gray-700 hover:bg-gray-800 text-white"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Add Question
@@ -137,7 +157,7 @@ const GameEdit = () => {
                 key={q.id}
                 className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 py-3 px-4">
+                <div className="bg-gray-700 py-3 px-4">
                   <h2 className="font-semibold text-white flex items-center">
                     <HelpCircle className="h-4 w-4 mr-2" />
                     Question {index + 1}
