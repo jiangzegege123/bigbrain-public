@@ -22,14 +22,16 @@ export const updateGames = async (token: string, games: Game[]) => {
 };
 
 // Fetch a single game by ID
-export const fetchSingleGame = async (token: string, gameId: string) => {
-  const res = await apiFetch(`/admin/quiz/${gameId}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res;
+export const fetchSingleGame = async (
+  token: string,
+  gameId: string
+): Promise<Game> => {
+  const { games }: { games: Game[] } = await fetchGames(token);
+  const game = games.find((g) => g.id.toString() === gameId);
+  if (!game) {
+    throw new Error("Game not found");
+  }
+  return game;
 };
 
 // Add a new (empty) question to a game
