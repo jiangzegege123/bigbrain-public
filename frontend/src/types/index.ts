@@ -3,10 +3,7 @@ export interface Question {
   question: string;
   duration: number;
   points: number;
-  media?: {
-    type: "image" | "video";
-    url: string;
-  };
+  media?: string;
   type: "single" | "multiple" | "judgement";
   options: {
     text: string;
