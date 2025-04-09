@@ -1,172 +1,172 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+// src/pages/QuestionEdit.tsx
+
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { updateQuestion, fetchSingleQuestion } from "@/api/game";
-import type { Question } from "@/types";
+import { fetchGames, updateGames } from "@/api/game";
+import type { Game, Question } from "@/types/index";
+import { useAuth } from "@/contexts/AuthContext";
 
 const QuestionEdit = () => {
-  const { token } = useAuth();
   const { gameId, questionId } = useParams();
-
+  const navigate = useNavigate();
+  const [game, setGame] = useState<Game | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [error, setError] = useState("");
+  const { token } = useAuth();
 
-  // Editable fields
-  const [type, setType] = useState("single");
-  const [questionText, setQuestionText] = useState("");
-  const [duration, setDuration] = useState(30);
-  const [points, setPoints] = useState(100);
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [answers, setAnswers] = useState<string[]>(["", ""]);
-  const [correctIndices, setCorrectIndices] = useState<number[]>([]);
-
-  // Load question
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchSingleQuestion(token!, gameId!, questionId!);
-        setQuestion(data);
-        setType(data.type);
-        setQuestionText(data.question);
-        setDuration(data.duration);
-        setPoints(data.points);
-        setMediaUrl(data.media || "");
-        setAnswers(data.answers || ["", ""]);
-        setCorrectIndices(data.correctAnswers || []);
-      } catch (err) {
-        if (err instanceof Error) setError(err.message);
-      }
-    };
-    load();
-  }, [token, gameId, questionId]);
-
-  const handleAnswerChange = (index: number, value: string) => {
-    const updated = [...answers];
-    updated[index] = value;
-    setAnswers(updated);
-  };
-
-  const handleCorrectToggle = (index: number) => {
-    if (correctIndices.includes(index)) {
-      setCorrectIndices(correctIndices.filter((i) => i !== index));
-    } else {
-      setCorrectIndices([...correctIndices, index]);
-    }
-  };
-
-  const handleSave = async () => {
+  const load = useCallback(async () => {
     try {
-      await updateQuestion(token!, gameId!, Number(questionId)!, {
-        type,
-        question: questionText,
-        duration,
-        points,
-        media: mediaUrl,
-        answers,
-        correctAnswers: correctIndices,
-      });
-      alert("Question updated successfully.");
+      const { games }: { games: Game[] } = await fetchGames(token!);
+      const found = games.find((g: Game) => g.id.toString() === gameId);
+      if (!found) throw new Error("Game not found");
+
+      const q = found.questions.find(
+        (q: Question) => q.id?.toString() === questionId
+      );
+      if (!q) throw new Error("Question not found");
+
+      setGame(found);
+      setQuestion(q);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
     }
+  }, [gameId, questionId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleChange = <K extends keyof Question>(
+    field: K,
+    value: Question[K]
+  ) => {
+    if (!question) return;
+    setQuestion({ ...question, [field]: value });
   };
 
-  if (!question) return <p className="p-8">Loading...</p>;
+  const handleOptionChange = (index: number, value: string) => {
+    if (!question) return;
+    const updated = [...question.options];
+    updated[index].text = value;
+    handleChange("options", updated);
+  };
+
+  const handleCorrectToggle = (index: number) => {
+    if (!question) return;
+    const updated = [...question.options];
+    updated[index].isCorrect = !updated[index].isCorrect;
+    handleChange("options", updated);
+  };
+
+  const handleSave = async () => {
+    if (!game || !question) return;
+    const updatedQuestions = game.questions.map((q) =>
+      q.id?.toString() === questionId ? question : q
+    );
+    const updatedGame = { ...game, questions: updatedQuestions };
+    await updateGames(game.owner, [updatedGame]);
+    navigate(`/game/${gameId}`);
+  };
+
+  if (!question) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <h1 className="text-2xl font-bold">Edit Question</h1>
+    <div className="p-6 space-y-4 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold">Edit Question #{question.id}</h1>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <div className="text-red-500 text-sm">{error}</div>}
 
-      <div className="space-y-4">
-        <div>
-          <Label>Question Type</Label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border rounded p-2"
-          >
-            <option value="single">Single Choice</option>
-            <option value="multiple">Multiple Choice</option>
-            <option value="judgement">Judgement</option>
-          </select>
-        </div>
+      <div className="space-y-2">
+        <Label>Question Type</Label>
+        <select
+          value={question.type}
+          onChange={(e) =>
+            handleChange("type", e.target.value as Question["type"])
+          }
+          className="border rounded p-2"
+        >
+          <option value="single">Single Choice</option>
+          <option value="multiple">Multiple Choice</option>
+          <option value="judgement">Judgement</option>
+        </select>
+      </div>
 
-        <div>
-          <Label>Question</Label>
-          <Input
-            value={questionText}
-            onChange={(e) => setQuestionText(e.target.value)}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Question</Label>
+        <Input
+          value={question.question}
+          onChange={(e) => handleChange("question", e.target.value)}
+        />
+      </div>
 
-        <div>
-          <Label>Duration (seconds)</Label>
-          <Input
-            type="number"
-            value={duration}
-            onChange={(e) => setDuration(Number(e.target.value))}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Duration (seconds)</Label>
+        <Input
+          type="number"
+          value={question.duration}
+          onChange={(e) => handleChange("duration", Number(e.target.value))}
+        />
+      </div>
 
-        <div>
-          <Label>Points</Label>
-          <Input
-            type="number"
-            value={points}
-            onChange={(e) => setPoints(Number(e.target.value))}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Points</Label>
+        <Input
+          type="number"
+          value={question.points}
+          onChange={(e) => handleChange("points", Number(e.target.value))}
+        />
+      </div>
 
-        <div>
-          <Label>Media (YouTube URL or Image)</Label>
-          <Input
-            value={mediaUrl}
-            onChange={(e) => setMediaUrl(e.target.value)}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Media URL (optional)</Label>
+        <Input
+          value={
+            typeof question.media === "string"
+              ? question.media
+              : question.media?.url || ""
+          }
+          onChange={(e) => handleChange("media", e.target.value)}
+        />
+      </div>
 
-        <div className="space-y-2">
-          <Label>Answers</Label>
-          {answers.map((ans, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Input
-                value={ans}
-                onChange={(e) => handleAnswerChange(idx, e.target.value)}
-              />
-              <input
-                type="checkbox"
-                checked={correctIndices.includes(idx)}
-                onChange={() => handleCorrectToggle(idx)}
-              />
-              <span className="text-sm">Correct</span>
-            </div>
-          ))}
-
+      <div className="space-y-2">
+        <Label>Answers (2-6)</Label>
+        {question.options.map((opt, i) => (
+          <div key={i} className="flex gap-2 items-center">
+            <Input
+              className="flex-1"
+              value={opt.text}
+              onChange={(e) => handleOptionChange(i, e.target.value)}
+            />
+            <input
+              type="checkbox"
+              checked={opt.isCorrect}
+              onChange={() => handleCorrectToggle(i)}
+              title="Correct answer?"
+            />
+          </div>
+        ))}
+        {question.options.length < 6 && (
           <Button
             variant="outline"
-            onClick={() => setAnswers([...answers, ""])}
-            disabled={answers.length >= 6}
+            onClick={() =>
+              handleChange("options", [
+                ...question.options,
+                { text: "", isCorrect: false },
+              ])
+            }
           >
-            Add Answer
+            + Add Option
           </Button>
-
-          {answers.length > 2 && (
-            <Button
-              variant="outline"
-              onClick={() => setAnswers(answers.slice(0, -1))}
-            >
-              Remove Answer
-            </Button>
-          )}
-        </div>
-
-        <Button onClick={handleSave}>Save Question</Button>
+        )}
       </div>
+
+      <Button className="mt-4" onClick={handleSave}>
+        Save Changes
+      </Button>
     </div>
   );
 };

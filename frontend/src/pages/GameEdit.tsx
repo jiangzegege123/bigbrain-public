@@ -20,6 +20,7 @@ const GameEdit = () => {
   const loadGame = useCallback(async () => {
     try {
       const { games } = await fetchGames(token!);
+      console.log(games);
       const found = games.find((g: Game) => g.id.toString() === gameId);
       if (!found) throw new Error("Game not found");
       setGame(found);
