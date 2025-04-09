@@ -6,17 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { fetchGames, updateGames } from "@/api/game";
 import type { Game, Question } from "@/types/index";
-import { Link } from "react-router-dom";
 import Navbar from "@/components/NavBar";
-import {
-  PlusCircle,
-  Edit2,
-  Trash2,
-  HelpCircle,
-  Clock,
-  Award,
-} from "lucide-react";
+import { PlusCircle, HelpCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import QuestionCard from "@/components/game/QuestionCard";
 
 const GameEdit = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -47,7 +40,7 @@ const GameEdit = () => {
         if (g.id.toString() !== gameId) return g;
 
         const newQuestion: Question = {
-          id: Math.floor(Math.random() * 1_000_000_000), // 生成唯一 id
+          id: Math.floor(Math.random() * 1_000_000_000),
           question: "",
           duration: 30,
           points: 100,
@@ -75,7 +68,6 @@ const GameEdit = () => {
       const updatedGames = games.map((g: Game) => {
         if (g.id.toString() !== gameId) return g;
 
-        // 删除该 game 中 id 匹配的 question
         const filteredQuestions = g.questions.filter(
           (q) => q.id !== questionId
         );
@@ -152,55 +144,14 @@ const GameEdit = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {game.questions.map((q: Question, index: number) => (
-              <div
+            {game.questions.map((q, index) => (
+              <QuestionCard
                 key={q.id}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="bg-gray-700 py-3 px-4">
-                  <h2 className="font-semibold text-white flex items-center">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Question {index + 1}
-                  </h2>
-                </div>
-                <div className="p-4">
-                  <p className="text-gray-700 font-medium mb-4 line-clamp-2 min-h-[3rem]">
-                    {q.question || "New question"}
-                  </p>
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {q.duration}s
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      <Award className="h-3 w-3 mr-1" />
-                      {q.points} pts
-                    </div>
-                    <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      {q.type}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <Link
-                      to={`/game/${game.id}/question/${q.id}`}
-                      className="w-full mr-2"
-                    >
-                      <Button variant="outline" className="w-full">
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    </Link>
-                    {typeof q.id === "number" && (
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDelete(q.id!)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                question={q}
+                index={index}
+                gameId={game.id}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         )}

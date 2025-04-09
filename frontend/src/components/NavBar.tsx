@@ -12,10 +12,17 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const handleLogoClick = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <header className="w-full bg-white border-b sticky top-0 z-10">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-2 text-xl font-bold">
+        <div
+          className="flex items-center gap-2 text-xl font-bold cursor-pointer"
+          onClick={handleLogoClick}
+        >
           <Brain className="h-6 w-6 text-gray-800" />
           <span className="bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
             BigBrain
