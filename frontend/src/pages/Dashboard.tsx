@@ -47,6 +47,11 @@ const Dashboard = () => {
     try {
       const data = await mutateGameState(token!, gameId, "END");
       await loadGames(token!, setGames, setError);
+      const activeGame = games.find((g) => g.id === gameId);
+      if (activeGame?.active != null) {
+        setSessionId(String(activeGame.active));
+      }
+
       setShowResultModal(true);
     } catch (err) {
       console.error("Failed to stop session:", err);
