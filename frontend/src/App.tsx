@@ -12,6 +12,8 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/game/:gameId" element={<GameEdit />} />
+      <Route path="/game/:gameId/question/new" element={<QuestionEdit />} />
+
       <Route
         path="/game/:gameId/question/:questionId"
         element={<QuestionEdit />}

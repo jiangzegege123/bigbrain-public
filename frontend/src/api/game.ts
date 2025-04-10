@@ -11,7 +11,6 @@ export const fetchGames = async (token: string) => {
 
 // Update the list of games via PUT /admin/games
 export const updateGames = async (token: string, games: Game[]) => {
-  console.log(token);
   return await apiFetch("/admin/games", {
     method: "PUT",
     headers: {

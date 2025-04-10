@@ -11,12 +11,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/NavBar";
 
 const QuestionEdit = () => {
-  const { gameId, questionId } = useParams();
+  const { gameId, questionId } = useParams<{
+    gameId: string;
+    questionId?: string;
+  }>();
+
   const navigate = useNavigate();
   const [game, setGame] = useState<Game | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [error, setError] = useState("");
   const { token } = useAuth();
+
+  const isNew = gameId && (!questionId || questionId === "new");
 
   const validateQuestion = (q: Question): string | null => {
     if (!q.question.trim()) return "Question text is required.";
@@ -24,11 +30,18 @@ const QuestionEdit = () => {
       return "Number of answers must be between 2 and 6.";
     if (q.options.some((opt) => !opt.text.trim()))
       return "All answers must be non-empty.";
-    if (!q.options.some((opt) => opt.isCorrect))
-      return "At least one correct answer must be selected.";
+    const correctCount = q.options.filter((opt) => opt.isCorrect).length;
+    if (q.type === "single" && correctCount !== 1)
+      return "Single choice questions must have exactly one correct answer.";
+    if (q.type === "multiple" && correctCount < 1)
+      return "Multiple choice questions must have at least one correct answer.";
+    if (q.type === "judgement" && q.options.length !== 2)
+      return "Judgement questions must have exactly two options.";
+    if (q.type === "judgement" && correctCount !== 1)
+      return "Judgement questions must have exactly one correct answer.";
     if (q.duration <= 0) return "Duration must be greater than 0.";
     if (q.points < 0) return "Points must be 0 or more.";
-    return null; // valid
+    return null;
   };
 
   const load = useCallback(async () => {
@@ -36,18 +49,30 @@ const QuestionEdit = () => {
       const { games }: { games: Game[] } = await fetchGames(token!);
       const found = games.find((g: Game) => g.id!.toString() === gameId);
       if (!found) throw new Error("Game not found");
-
-      const q = found.questions.find(
-        (q: Question) => q.id?.toString() === questionId
-      );
-      if (!q) throw new Error("Question not found");
-
       setGame(found);
-      setQuestion(q);
+
+      if (!isNew) {
+        const q = found.questions.find(
+          (q: Question) => q.id?.toString() === questionId
+        );
+        if (!q) throw new Error("Question not found");
+        setQuestion(q);
+      } else {
+        setQuestion({
+          question: "",
+          duration: 30,
+          points: 100,
+          type: "single",
+          options: [
+            { text: "", isCorrect: false },
+            { text: "", isCorrect: false },
+          ],
+        });
+      }
     } catch (err) {
       if (err instanceof Error) setError(err.message);
     }
-  }, [gameId, questionId, token]);
+  }, [gameId, questionId, token, isNew]);
 
   useEffect(() => {
     load();
@@ -87,7 +112,6 @@ const QuestionEdit = () => {
 
   const handleSave = async () => {
     setError("");
-
     if (!game || !question) return;
 
     const errorMessage = validateQuestion(question);
@@ -97,16 +121,21 @@ const QuestionEdit = () => {
     }
 
     const { games: allGames } = await fetchGames(token!);
-
     const updatedGames = allGames.map((g: Game) => {
       if (g.id?.toString() === gameId) {
-        const updatedQuestions = g.questions.map((q) =>
-          q.id?.toString() === questionId ? question : q
-        );
+        const updatedQuestions = isNew
+          ? [
+              ...g.questions,
+              { ...question, id: Math.floor(Math.random() * 1_000_000_000) },
+            ]
+          : g.questions.map((q) =>
+              q.id?.toString() === questionId ? question : q
+            );
         return { ...g, questions: updatedQuestions };
       }
       return g;
     });
+
     await updateGames(token!, updatedGames);
     navigate(`/game/${gameId}`);
   };
@@ -117,7 +146,9 @@ const QuestionEdit = () => {
     <>
       <Navbar />
       <div className="p-6 space-y-4 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold">Edit Question #{question.id}</h1>
+        <h1 className="text-2xl font-bold">
+          {isNew ? "Create New Question" : `Edit Question #${question.id}`}
+        </h1>
 
         {error && <div className="text-red-500 text-sm">{error}</div>}
 
@@ -166,7 +197,11 @@ const QuestionEdit = () => {
           <Label>Media (URL or Upload)</Label>
           <Input
             placeholder="Paste a video/image URL"
-            value={question.media || ""}
+            value={
+              typeof question.media === "string"
+                ? question.media
+                : question.media || ""
+            }
             onChange={(e) => handleChange("media", e.target.value)}
           />
           <Label className="mt-1">Or Upload an Image</Label>
@@ -205,8 +240,16 @@ const QuestionEdit = () => {
           )}
         </div>
 
-        <Button className="mt-4" onClick={handleSave}>
+        <Button className="mt-4 mr-4" onClick={handleSave}>
           Save Changes
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            navigate(`/game/${gameId}`);
+          }}
+        >
+          Cancel
         </Button>
       </div>
     </>

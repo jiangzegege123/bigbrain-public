@@ -1,20 +1,20 @@
-"use client";
-
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { fetchGames, updateGames } from "@/api/game";
-import type { Game, Question } from "@/types/index";
+import type { Game } from "@/types/index";
 import Navbar from "@/components/NavBar";
 import { PlusCircle, HelpCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuestionCard from "@/components/game/QuestionCard";
+
 const GameEdit = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { token } = useAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const loadGame = useCallback(async () => {
     try {
@@ -31,42 +31,15 @@ const GameEdit = () => {
     loadGame();
   }, [loadGame]);
 
-  // Add question
-  const handleAdd = async () => {
-    try {
-      const { games } = await fetchGames(token!);
-      const updatedGames = games.map((g: Game) => {
-        if (g.id!.toString() !== gameId) return g;
-
-        const newQuestion: Question = {
-          id: Math.floor(Math.random() * 1_000_000_000),
-          question: "",
-          duration: 30,
-          points: 100,
-          type: "single",
-          options: [],
-        };
-
-        return {
-          ...g,
-          questions: [...g.questions, newQuestion],
-        };
-      });
-
-      await updateGames(token!, updatedGames);
-      await loadGame();
-    } catch (err) {
-      if (err instanceof Error) setError(err.message);
-    }
+  const handleAdd = () => {
+    navigate(`/game/${gameId}/question/new`);
   };
 
-  // Delete question
   const handleDelete = async (questionId: number) => {
     try {
       const { games } = await fetchGames(token!);
       const updatedGames = games.map((g: Game) => {
         if (g.id!.toString() !== gameId) return g;
-
         const filteredQuestions = g.questions.filter(
           (q) => q.id !== questionId
         );
