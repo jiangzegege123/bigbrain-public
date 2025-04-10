@@ -35,10 +35,15 @@ const QuestionEdit = () => {
       return "Single choice questions must have exactly one correct answer.";
     if (q.type === "multiple" && correctCount < 1)
       return "Multiple choice questions must have at least one correct answer.";
-    if (q.type === "judgement" && q.options.length !== 2)
-      return "Judgement questions must have exactly two options.";
-    if (q.type === "judgement" && correctCount !== 1)
-      return "Judgement questions must have exactly one correct answer.";
+    if (q.type === "judgement") {
+      const validOptions = q.options.map((opt) => opt.text.toLowerCase());
+      const hasTrue = validOptions.includes("true");
+      const hasFalse = validOptions.includes("false");
+      if (q.options.length !== 2 || !hasTrue || !hasFalse)
+        return "Judgement questions must have exactly two options: 'True' and 'False'.";
+      if (correctCount !== 1)
+        return "Judgement questions must have exactly one correct answer.";
+    }
     if (q.duration <= 0) return "Duration must be greater than 0.";
     if (q.points < 0) return "Points must be 0 or more.";
     return null;
@@ -83,7 +88,17 @@ const QuestionEdit = () => {
     value: Question[K]
   ) => {
     if (!question) return;
-    setQuestion({ ...question, [field]: value });
+    let updatedQuestion = { ...question, [field]: value };
+
+    // Reset options if type is judgement
+    if (field === "type" && value === "judgement") {
+      updatedQuestion.options = [
+        { text: "True", isCorrect: false },
+        { text: "False", isCorrect: false },
+      ];
+    }
+
+    setQuestion(updatedQuestion);
   };
 
   const handleOptionChange = (index: number, value: string) => {
@@ -215,6 +230,7 @@ const QuestionEdit = () => {
               <Input
                 className="flex-1"
                 value={opt.text}
+                disabled={question.type === "judgement"}
                 onChange={(e) => handleOptionChange(i, e.target.value)}
               />
               <input
@@ -225,7 +241,7 @@ const QuestionEdit = () => {
               />
             </div>
           ))}
-          {question.options.length < 6 && (
+          {question.type !== "judgement" && question.options.length < 6 && (
             <Button
               variant="outline"
               onClick={() =>
