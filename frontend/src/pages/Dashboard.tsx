@@ -31,6 +31,7 @@ const Dashboard = () => {
   const handleStartSession = async (gameId: number) => {
     try {
       const data = await mutateGameState(token!, gameId, "START");
+      console.log(data);
       setSessionId(data.sessionId);
       await loadGames(token!, setGames, setError);
       setShowSessionModal(true);

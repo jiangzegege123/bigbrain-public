@@ -20,6 +20,7 @@ export const mutateGameState = async (
   });
   return res.data;
 };
+
 export const getSessionResults = async (
   token: string,
   sessionId: string
@@ -32,4 +33,17 @@ export const getSessionResults = async (
   });
 
   return response;
+};
+
+export const checkSessionStatus = async (
+  token: string,
+  sessionId: string
+): Promise<any> => {
+  const res = await apiFetch(`/admin/session/${sessionId}/status`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res;
 };

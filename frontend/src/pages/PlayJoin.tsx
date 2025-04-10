@@ -1,19 +1,38 @@
 "use client";
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserIcon } from "lucide-react";
+import { joinSession } from "@/api/player";
+import { checkSessionStatus } from "@/api/session";
+import { useAuth } from "@/contexts/AuthContext";
 
 const PlayJoin = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [name, setName] = useState("");
-
-  const handleJoin = () => {
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const handleJoin = async () => {
     if (!name.trim()) return alert("Please enter your name");
-    // TODO: 调用 join API 然后跳转到等待或游戏页面
-    alert(`Joined session ${sessionId} as ${name}`);
+
+    try {
+      console.log("!11");
+      console.log(sessionId);
+      const status = await checkSessionStatus(token!, sessionId!);
+      console.log("status", status);
+
+      const data = await joinSession(sessionId!, name);
+      console.log("joinData", data);
+      localStorage.setItem("playerName", name);
+      navigate(`/play/${sessionId}`);
+    } catch (err) {
+      setError(
+        "Failed to join session. Please check the session ID or try again."
+      );
+    }
   };
 
   return (
@@ -49,6 +68,8 @@ const PlayJoin = () => {
           >
             Join Game
           </Button>
+
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </div>
     </div>
