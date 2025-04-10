@@ -21,7 +21,7 @@ const GameEdit = () => {
     try {
       const { games } = await fetchGames(token!);
       console.log(games);
-      const found = games.find((g: Game) => g.id.toString() === gameId);
+      const found = games.find((g: Game) => g.id!.toString() === gameId);
       if (!found) throw new Error("Game not found");
       setGame(found);
     } catch (err) {
@@ -38,7 +38,7 @@ const GameEdit = () => {
     try {
       const { games } = await fetchGames(token!);
       const updatedGames = games.map((g: Game) => {
-        if (g.id.toString() !== gameId) return g;
+        if (g.id!.toString() !== gameId) return g;
 
         const newQuestion: Question = {
           id: Math.floor(Math.random() * 1_000_000_000),
@@ -67,7 +67,7 @@ const GameEdit = () => {
     try {
       const { games } = await fetchGames(token!);
       const updatedGames = games.map((g: Game) => {
-        if (g.id.toString() !== gameId) return g;
+        if (g.id!.toString() !== gameId) return g;
 
         const filteredQuestions = g.questions.filter(
           (q) => q.id !== questionId
@@ -150,7 +150,7 @@ const GameEdit = () => {
                 key={q.id}
                 question={q}
                 index={index}
-                gameId={game.id}
+                gameId={game.id!}
                 onDelete={handleDelete}
               />
             ))}

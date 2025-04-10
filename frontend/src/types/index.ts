@@ -12,7 +12,7 @@ export interface Question {
 }
 
 export interface Game {
-  id: number;
+  id?: number;
   name: string;
   owner: string;
   questions: Question[];

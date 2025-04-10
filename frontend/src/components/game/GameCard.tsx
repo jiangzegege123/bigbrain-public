@@ -29,7 +29,7 @@ const GameCard = ({ game, onDelete }: GameCardProps) => {
   const handleConfirmDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onDelete(game.id);
+    onDelete(game.id!);
     setShowConfirm(false);
   };
 

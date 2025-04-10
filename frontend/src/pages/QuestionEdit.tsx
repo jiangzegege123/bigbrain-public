@@ -21,7 +21,7 @@ const QuestionEdit = () => {
   const load = useCallback(async () => {
     try {
       const { games }: { games: Game[] } = await fetchGames(token!);
-      const found = games.find((g: Game) => g.id.toString() === gameId);
+      const found = games.find((g: Game) => g.id!.toString() === gameId);
       if (!found) throw new Error("Game not found");
 
       const q = found.questions.find(

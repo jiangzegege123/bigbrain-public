@@ -8,56 +8,27 @@ import type { Game } from "@/types/index";
 import GameCard from "@/components/game/GameCard";
 import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
+import { useNavigate } from "react-router-dom";
+import { loadGames, createGame } from "@/api/game";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Fetch all games when token changes
   useEffect(() => {
-    const loadGames = async () => {
-      try {
-        const data = await fetchGames(token!);
-        setGames(data.games);
-      } catch (err) {
-        console.error("Failed to fetch games", err);
-      }
-    };
-    loadGames();
+    loadGames(token!, setGames, setError);
   }, [token]);
 
   // Handle new game creation
   const handleCreateGame = async (name: string) => {
-    try {
-      // Step 1: Fetch current games
-      const { games: currentGames }: { games: Game[] } = await fetchGames(
-        token!
-      );
-
-      // Step 2: Generate new game
-      const newId = Math.floor(Math.random() * 1_000_000_000);
-      const newGame: Game = {
-        id: newId,
-        name,
-        owner: email!,
-        questions: [],
-      };
-
-      // Step 3: Add new game to existing list
-      const updatedGames: Game[] = [...currentGames, newGame];
-
-      // Step 4: Update backend
-      await updateGames(token!, updatedGames);
-
-      // Step 5: Update local state
-      setGames(updatedGames);
+    const created = await createGame(token!, email!, name, setGames, setError);
+    if (created) {
       setShowModal(false);
-      setError("");
-    } catch (err) {
-      if (err instanceof Error) setError(err.message);
-      else setError("An unexpected error occurred.");
+      navigate(`/game/${created.id}`, { state: { game: created } });
     }
   };
 
