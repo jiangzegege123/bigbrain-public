@@ -1,7 +1,10 @@
-// src/pages/PlayJoin.tsx
+"use client";
 
 import { useParams } from "react-router-dom";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { UserIcon } from "lucide-react";
 
 const PlayJoin = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -14,20 +17,40 @@ const PlayJoin = () => {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto space-y-4">
-      <h1 className="text-xl font-bold">Joining Session #{sessionId}</h1>
-      <input
-        className="border w-full p-2 rounded"
-        placeholder="Enter your name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button
-        className="bg-green-600 text-white w-full py-2 rounded"
-        onClick={handleJoin}
-      >
-        Join Game
-      </button>
+    <div className="flex items-center justify-center min-h-[700px] p-4">
+      <div className="w-full max-w-md p-6 space-y-5 bg-white rounded-xl shadow-lg border border-gray-100 min-w-[350px]">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <div className="p-2.5 rounded-full bg-green-50">
+            <UserIcon className="w-6 h-6 text-green-600" />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight">Joining Session</h1>
+          <div className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+            #{sessionId}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            Enter your name to join this game
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Input
+              className="w-full"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+            />
+          </div>
+
+          <Button
+            className="w-full bg-green-600 hover:bg-green-700"
+            onClick={handleJoin}
+          >
+            Join Game
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
