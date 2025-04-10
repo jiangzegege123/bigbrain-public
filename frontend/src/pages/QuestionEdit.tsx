@@ -18,6 +18,19 @@ const QuestionEdit = () => {
   const [error, setError] = useState("");
   const { token } = useAuth();
 
+  const validateQuestion = (q: Question): string | null => {
+    if (!q.question.trim()) return "Question text is required.";
+    if (q.options.length < 2 || q.options.length > 6)
+      return "Number of answers must be between 2 and 6.";
+    if (q.options.some((opt) => !opt.text.trim()))
+      return "All answers must be non-empty.";
+    if (!q.options.some((opt) => opt.isCorrect))
+      return "At least one correct answer must be selected.";
+    if (q.duration <= 0) return "Duration must be greater than 0.";
+    if (q.points < 0) return "Points must be 0 or more.";
+    return null; // valid
+  };
+
   const load = useCallback(async () => {
     try {
       const { games }: { games: Game[] } = await fetchGames(token!);
@@ -73,12 +86,28 @@ const QuestionEdit = () => {
   };
 
   const handleSave = async () => {
+    setError("");
+
     if (!game || !question) return;
-    const updatedQuestions = game.questions.map((q) =>
-      q.id?.toString() === questionId ? question : q
-    );
-    const updatedGame = { ...game, questions: updatedQuestions };
-    await updateGames(game.owner, [updatedGame]);
+
+    const errorMessage = validateQuestion(question);
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+
+    const { games: allGames } = await fetchGames(token!);
+
+    const updatedGames = allGames.map((g: Game) => {
+      if (g.id?.toString() === gameId) {
+        const updatedQuestions = g.questions.map((q) =>
+          q.id?.toString() === questionId ? question : q
+        );
+        return { ...g, questions: updatedQuestions };
+      }
+      return g;
+    });
+    await updateGames(token!, updatedGames);
     navigate(`/game/${gameId}`);
   };
 

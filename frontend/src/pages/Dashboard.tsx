@@ -39,7 +39,6 @@ const Dashboard = () => {
         token!
       );
       const updatedGames = currentGames.filter((game) => game.id !== id);
-      console.log(updatedGames);
       await updateGames(token!, updatedGames);
       setGames(updatedGames);
     } catch (err) {

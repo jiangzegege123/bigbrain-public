@@ -10,7 +10,6 @@ import Navbar from "@/components/NavBar";
 import { PlusCircle, HelpCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuestionCard from "@/components/game/QuestionCard";
-
 const GameEdit = () => {
   const { gameId } = useParams<{ gameId: string }>();
   const { token } = useAuth();
@@ -20,7 +19,6 @@ const GameEdit = () => {
   const loadGame = useCallback(async () => {
     try {
       const { games } = await fetchGames(token!);
-      console.log(games);
       const found = games.find((g: Game) => g.id!.toString() === gameId);
       if (!found) throw new Error("Game not found");
       setGame(found);
