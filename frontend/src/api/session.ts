@@ -1,6 +1,7 @@
 // src/api/session.ts
 
 import { apiFetch } from "@/lib/utils";
+import type { SessionResult } from "@/types";
 
 /**
  * Change the state of a game session (START, ADVANCE, END)
@@ -19,15 +20,16 @@ export const mutateGameState = async (
   });
   return res.data;
 };
-
-export const fetchSessionStatus = async (
+export const getSessionResults = async (
   token: string,
-  gameId: number
-): Promise<string> => {
-  const data = await apiFetch(`/admin/session/${gameId}/status`, {
+  sessionId: string
+): Promise<SessionResult> => {
+  const response = await apiFetch(`/admin/session/${sessionId}/results`, {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  return data.sessionId;
+
+  return response;
 };

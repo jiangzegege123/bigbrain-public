@@ -21,3 +21,15 @@ export interface Game {
   thumbnail?: string;
   createdAt?: string;
 }
+
+export interface SessionResult {
+  players: {
+    name: string;
+    score: number;
+    answers: {
+      questionId: number;
+      correct: boolean;
+      timeTaken: number;
+    }[];
+  }[];
+}

@@ -19,7 +19,7 @@ const SessionResultModal = ({
         <p>Would you like to view the results?</p>
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => navigate(`/results/${sessionId}`)}
+            onClick={() => navigate(`/session/${sessionId}`)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Yes
