@@ -12,9 +12,17 @@ interface GameCardProps {
   game: Game;
   onDelete: (id: number) => void;
   onStartSession: (id: number) => void;
+  onStopSession: (id: number) => void;
 }
 
-const GameCard = ({ game, onDelete, onStartSession }: GameCardProps) => {
+const GameCard = ({
+  game,
+  onDelete,
+  onStartSession,
+  onStopSession,
+}: GameCardProps) => {
+  const isActive = game.active != null;
+
   const [showConfirm, setShowConfirm] = useState(false);
   const totalDuration = game.questions.reduce(
     (sum: number, q: Question) => sum + q.duration,
@@ -39,6 +47,8 @@ const GameCard = ({ game, onDelete, onStartSession }: GameCardProps) => {
     e.stopPropagation();
     setShowConfirm(false);
   };
+
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow hover:shadow-md transition group relative">
@@ -101,10 +111,16 @@ const GameCard = ({ game, onDelete, onStartSession }: GameCardProps) => {
       )}
       <div className="p-2 border-t flex justify-between">
         <Button
-          onClick={() => onStartSession(game.id!)}
-          className="bg-green-600 hover:bg-green-700 text-white text-sm"
+          className={`relative ${
+            isActive ? "bg-yellow-600 hover:bg-red-600" : ""
+          }`}
+          onClick={() =>
+            isActive ? onStopSession?.(game.id) : onStartSession?.(game.id)
+          }
+          onMouseEnter={() => isActive && setHovered(true)}
+          onMouseLeave={() => isActive && setHovered(false)}
         >
-          Start Game
+          {isActive ? (hovered ? "Stop Game" : "In Progress") : "Start Game"}
         </Button>
       </div>
     </div>

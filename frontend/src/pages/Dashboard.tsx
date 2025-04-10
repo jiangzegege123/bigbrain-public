@@ -11,6 +11,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { loadGames, createGame } from "@/api/game";
 import { mutateGameState } from "@/api/session";
 import { useNavigate } from "react-router-dom";
+import SessionResultModal from "@/components/session/SessionResultModal";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
@@ -20,6 +21,7 @@ const Dashboard = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const navigate = useNavigate();
+  const [showResultModal, setShowResultModal] = useState(false);
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -29,15 +31,27 @@ const Dashboard = () => {
   const handleStartSession = async (gameId: number) => {
     try {
       const data = await mutateGameState(token!, gameId, "START");
-      console.log(data);
       setSessionId(data.sessionId);
+      await loadGames(token!, setGames, setError);
       setShowSessionModal(true);
-      console.log(sessionId);
-      alert(`Game started for game #${gameId}`);
     } catch (err) {
       console.error("Failed to start session:", err);
       alert(
         "Failed to start session: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
+    }
+  };
+
+  const handleStopSession = async (gameId: number) => {
+    try {
+      const data = await mutateGameState(token!, gameId, "END");
+      await loadGames(token!, setGames, setError);
+      setShowResultModal(true);
+    } catch (err) {
+      console.error("Failed to stop session:", err);
+      alert(
+        "Failed to stop session: " +
           (err instanceof Error ? err.message : "Unknown error")
       );
     }
@@ -97,6 +111,7 @@ const Dashboard = () => {
                 game={game}
                 onDelete={handleDeleteGame}
                 onStartSession={handleStartSession}
+                onStopSession={handleStopSession}
               />
             ))}
           </div>
@@ -154,8 +169,22 @@ const Dashboard = () => {
                 Go to Play Page
               </button>
             </div>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowSessionModal(false)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Back to Dashboard
+              </button>
+            </div>
           </div>
         </div>
+      )}
+      {showResultModal && sessionId && (
+        <SessionResultModal
+          sessionId={sessionId}
+          onClose={() => setShowResultModal(false)}
+        />
       )}
     </>
   );
