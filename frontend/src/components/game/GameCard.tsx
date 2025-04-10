@@ -6,15 +6,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Clock, HelpCircle, Gamepad2, X } from "lucide-react";
 import type { Game, Question } from "@/types/index";
+import { Button } from "../ui/button";
 
 interface GameCardProps {
   game: Game;
   onDelete: (id: number) => void;
+  onStartSession: (id: number) => void;
 }
 
-const GameCard = ({ game, onDelete }: GameCardProps) => {
+const GameCard = ({ game, onDelete, onStartSession }: GameCardProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
-
   const totalDuration = game.questions.reduce(
     (sum: number, q: Question) => sum + q.duration,
     0
@@ -98,6 +99,14 @@ const GameCard = ({ game, onDelete }: GameCardProps) => {
           </div>
         </div>
       )}
+      <div className="p-2 border-t flex justify-between">
+        <Button
+          onClick={() => onStartSession(game.id!)}
+          className="bg-green-600 hover:bg-green-700 text-white text-sm"
+        >
+          Start Game
+        </Button>
+      </div>
     </div>
   );
 };

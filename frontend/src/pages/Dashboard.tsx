@@ -9,18 +9,36 @@ import GameCard from "@/components/game/GameCard";
 import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
 import { loadGames, createGame } from "@/api/game";
+import { mutateGameState } from "@/api/session";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Fetch all games when token changes
   useEffect(() => {
     loadGames(token!, setGames, setError);
   }, [token]);
 
+  const handleStartSession = async (gameId: number) => {
+    try {
+      const data = await mutateGameState(token!, gameId, "START");
+      console.log(data);
+      setSessionId(data.sessionId);
+      setShowModal(true);
+      console.log(sessionId);
+      alert(`Game started for game #${gameId}`);
+    } catch (err) {
+      console.error("Failed to start session:", err);
+      alert(
+        "Failed to start session: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
+    }
+  };
   // Handle new game creation
   const handleCreateGame = async (name: string) => {
     const created = await createGame(token!, email!, name, setGames, setError);
@@ -71,7 +89,12 @@ const Dashboard = () => {
           {/* Game list */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {games.map((game) => (
-              <GameCard key={game.id} game={game} onDelete={handleDeleteGame} />
+              <GameCard
+                key={game.id}
+                game={game}
+                onDelete={handleDeleteGame}
+                onStartSession={handleStartSession}
+              />
             ))}
           </div>
 
