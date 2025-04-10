@@ -10,6 +10,7 @@ import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
 import { loadGames, createGame } from "@/api/game";
 import { mutateGameState } from "@/api/session";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
@@ -17,6 +18,8 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const navigate = useNavigate();
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -28,7 +31,7 @@ const Dashboard = () => {
       const data = await mutateGameState(token!, gameId, "START");
       console.log(data);
       setSessionId(data.sessionId);
-      setShowModal(true);
+      setShowSessionModal(true);
       console.log(sessionId);
       alert(`Game started for game #${gameId}`);
     } catch (err) {
@@ -118,6 +121,41 @@ const Dashboard = () => {
       )}
       {error && (
         <div className="text-center mt-4 text-red-500 text-sm">{error}</div>
+      )}
+      {showSessionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Session Started</h2>
+            <p>Your session ID:</p>
+            <input
+              type="text"
+              readOnly
+              value={`http://localhost:3000/play/${sessionId}`}
+              className="border p-2 mt-2 w-full rounded"
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `http://localhost:3000/play/${sessionId}`
+                  )
+                }
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Copy Link
+              </button>
+              <button
+                onClick={() => {
+                  setShowSessionModal(false);
+                  navigate(`/play/${sessionId}`);
+                }}
+                className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
+              >
+                Go to Play Page
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
