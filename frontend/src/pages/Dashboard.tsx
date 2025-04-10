@@ -8,7 +8,6 @@ import type { Game } from "@/types/index";
 import GameCard from "@/components/game/GameCard";
 import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
-import { useNavigate } from "react-router-dom";
 import { loadGames, createGame } from "@/api/game";
 
 const Dashboard = () => {
@@ -16,7 +15,6 @@ const Dashboard = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -28,7 +26,7 @@ const Dashboard = () => {
     const created = await createGame(token!, email!, name, setGames, setError);
     if (created) {
       setShowModal(false);
-      navigate(`/game/${created.id}`, { state: { game: created } });
+      // navigate(`/game/${created.id}`, { state: { game: created } });
     }
   };
 
