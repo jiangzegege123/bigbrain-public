@@ -24,10 +24,10 @@ const PlayJoin = () => {
       const status = await checkSessionStatus(token!, sessionId!);
       console.log("status", status);
 
-      const data = await joinSession(sessionId!, name);
-      console.log("joinData", data);
+      const joinData = await joinSession(sessionId!, name);
       localStorage.setItem("playerName", name);
-      navigate(`/play/${sessionId}`);
+      localStorage.setItem("playerId", joinData.playerId);
+      navigate(`/play/${sessionId}/${joinData.playerId}`);
     } catch (err) {
       setError(
         "Failed to join session. Please check the session ID or try again."
