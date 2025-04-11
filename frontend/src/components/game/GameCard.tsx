@@ -46,6 +46,7 @@ const GameCard = ({
     const startPolling = () => {
       interval = setInterval(async () => {
         if (!game.active) return;
+
         const data = await onCheckStatus(game.active);
 
         if (data?.results.position !== undefined) {
@@ -207,7 +208,7 @@ const GameCard = ({
             className="text-green-600 border-green-600 hover:bg-green-50"
             onClick={() => {
               // TODO: replace with your actual navigation logic
-              navigate(`/session/${game.active}`);
+              navigate(`/session/${game.oldSessions[0]}`);
             }}
           >
             Show Result

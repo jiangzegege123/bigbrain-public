@@ -1,44 +1,107 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { GamepadIcon as GameController } from "lucide-react";
+import { UserIcon, GamepadIcon } from "lucide-react";
+import { joinSession } from "@/api/player";
+import { checkSessionStatus } from "@/api/session";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Play = () => {
-  const [sessionId, setSessionId] = useState("");
+  const params = useParams<{ sessionId?: string }>();
   const navigate = useNavigate();
+  const { token } = useAuth();
+
+  const [sessionId, setSessionId] = useState(params.sessionId || "");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(!!params.sessionId);
+  const [sessionValid, setSessionValid] = useState(true);
+  const [sessionStarted, setSessionStarted] = useState(false);
 
-  const handleJoin = () => {
-    if (!sessionId.trim()) {
-      setError("Please enter a session ID");
-      return;
+  // 🔍 如果 URL 里有 sessionId，则检查状态
+  useEffect(() => {
+    if (!params.sessionId) return;
+
+    const checkStatus = async () => {
+      try {
+        const status = await checkSessionStatus(token!, params.sessionId!);
+        setSessionStarted(status.active); // active 为 true 表示游戏已开始
+        setSessionValid(true);
+      } catch (err) {
+        setSessionValid(false); // 游戏不存在
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkStatus();
+  }, [params.sessionId, token]);
+
+  const handleJoin = async () => {
+    if (!sessionId.trim()) return setError("Please enter a session ID");
+    if (!name.trim()) return setError("Please enter your name");
+
+    try {
+      const joinData = await joinSession(sessionId, name);
+      localStorage.setItem("playerName", name);
+      localStorage.setItem("playerId", joinData.playerId);
+      navigate(`/play/${sessionId}/${joinData.playerId}`);
+    } catch (err) {
+      setError("Failed to join session. Please try again.");
     }
-
-    setError(""); // 清除旧错误
-    navigate(`/play/${sessionId}`);
   };
+
+  if (loading) {
+    return <div className="p-6 text-center">Checking session...</div>;
+  }
+
+  if (params.sessionId && !sessionValid) {
+    return (
+      <div className="p-6 text-center space-y-4">
+        <h2 className="text-xl font-bold text-red-600">Game not found</h2>
+        <Button onClick={() => navigate("/play")}>Back to Play Page</Button>
+      </div>
+    );
+  }
+
+  if (params.sessionId && sessionStarted) {
+    return (
+      <div className="p-6 text-center space-y-4">
+        <h2 className="text-xl font-bold text-orange-600">
+          Game already started
+        </h2>
+        <p>You can't join this session anymore.</p>
+        <Button onClick={() => navigate("/play")}>Back to Play Page</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-[700px] p-4">
       <div className="w-full max-w-md p-6 space-y-5 bg-white rounded-xl shadow-lg border border-gray-100 min-w-[350px]">
         <div className="flex flex-col items-center space-y-2 text-center">
           <div className="p-2.5 rounded-full bg-blue-50">
-            <GameController className="w-6 h-6 text-blue-600" />
+            <UserIcon className="w-6 h-6 text-blue-600" />
           </div>
           <h1 className="text-xl font-bold tracking-tight">Join a Game</h1>
           <p className="text-sm text-gray-500">
-            Enter the session ID to join an existing game
+            Enter session ID and your name to join
           </p>
         </div>
 
         <div className="space-y-3">
           <div className="space-y-2">
             <Input
-              className="w-full"
+              disabled={!!params.sessionId}
               placeholder="Enter session ID"
               value={sessionId}
               onChange={(e) => setSessionId(e.target.value)}
+            />
+            <Input
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleJoin()}
             />
           </div>
@@ -50,7 +113,6 @@ const Play = () => {
             Join Game
           </Button>
 
-          {/* 红字错误信息展示 */}
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </div>

@@ -25,7 +25,7 @@ function App() {
 
       <Route path="/session/:sessionId" element={<SessionResults />} />
       <Route path="/play" element={<Play />} />
-      <Route path="/play/:sessionId" element={<PlayJoin />} />
+      <Route path="/play/:sessionId" element={<Play />} />
       <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>

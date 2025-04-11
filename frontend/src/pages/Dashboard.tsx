@@ -30,6 +30,16 @@ const Dashboard = () => {
   }, [token]);
 
   const handleStartSession = async (gameId: number) => {
+    setError("");
+
+    const selectedGame = games.find((g) => g.id === gameId);
+    if (!selectedGame || selectedGame.questions.length === 0) {
+      setError(
+        "This game has no questions. Please add at least one question before starting."
+      );
+      return;
+    }
+
     try {
       const data = await mutateGameState(token!, gameId, "START");
       setSessionId(data.sessionId);
@@ -45,9 +55,10 @@ const Dashboard = () => {
   };
 
   const checkStatus = async (sessionId: string) => {
+    setError("");
+
     try {
       const data = await checkSessionStatus(token!, sessionId);
-      console.log("data", data);
       return data;
     } catch (err) {
       console.error("Failed to check status:", err);
@@ -55,14 +66,17 @@ const Dashboard = () => {
   };
 
   const handleStopSession = async (gameId: number) => {
+    setError("");
+
     try {
+      const data = await mutateGameState(token!, gameId, "END");
       await loadGames(token!, setGames, setError);
       const activeGame = games.find((g) => g.id === gameId);
       if (activeGame?.active != null) {
         setSessionId(String(activeGame.active));
       }
 
-      setShowResultModal(true);
+      // setShowResultModal(true);
     } catch (err) {
       console.error("Failed to stop session:", err);
       alert(
@@ -73,6 +87,8 @@ const Dashboard = () => {
   };
 
   const handleAdvanceGame = async (gameId: number) => {
+    setError("");
+
     try {
       await mutateGameState(token!, gameId, "advance");
       await loadGames(token!, setGames, setError);
@@ -87,17 +103,18 @@ const Dashboard = () => {
 
   // Handle new game creation
   const handleCreateGame = async (name: string) => {
+    setError("");
+
     const created = await createGame(token!, email!, name, setGames, setError);
     if (created) {
       setShowModal(false);
-      navigate(`/sessions/${sessionId}`);
-
       // navigate(`/game/${created.id}`, { state: { game: created } });
     }
   };
 
   //Handle delete a game
   const handleDeleteGame = async (id: number) => {
+    setError("");
     try {
       const { games: currentGames }: { games: Game[] } = await fetchGames(
         token!
@@ -133,6 +150,11 @@ const Dashboard = () => {
               <span>Add Game</span>
             </Button>
           </div>
+
+          {/* 🔴 Error message */}
+          {error && (
+            <div className="text-center mb-4 text-red-500 text-sm">{error}</div>
+          )}
 
           {/* Game list */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
