@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -9,9 +7,15 @@ import { GamepadIcon as GameController } from "lucide-react";
 const Play = () => {
   const [sessionId, setSessionId] = useState("");
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const handleJoin = () => {
-    if (!sessionId.trim()) return alert("Please enter a session ID");
+    if (!sessionId.trim()) {
+      setError("Please enter a session ID");
+      return;
+    }
+
+    setError(""); // 清除旧错误
     navigate(`/play/${sessionId}`);
   };
 
@@ -45,6 +49,9 @@ const Play = () => {
           >
             Join Game
           </Button>
+
+          {/* 红字错误信息展示 */}
+          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </div>
     </div>
