@@ -1,27 +1,86 @@
-"use client";
-
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Clock, HelpCircle, Gamepad2, X } from "lucide-react";
 import type { Game, Question } from "@/types/index";
 import { Button } from "../ui/button";
-
+import { useNavigate } from "react-router-dom";
 interface GameCardProps {
   game: Game;
   onDelete: (id: number) => void;
   onStartSession: (id: number) => void;
   onStopSession: (id: number) => void;
+  onAdvanceGame: (id: number) => void;
+  onCheckStatus: (id: number) => Promise<SessionStatusData | undefined>;
 }
 
+interface SessionStatusData {
+  results: {
+    active: boolean;
+    answerAvailable: boolean;
+    isoTimeLastQuestionStarted: string | null;
+    position: number;
+  };
+}
 const GameCard = ({
   game,
   onDelete,
   onStartSession,
   onStopSession,
+  onAdvanceGame,
+  onCheckStatus,
 }: GameCardProps) => {
   const isActive = game.active != null;
+
+  const [quizStarted, setQuizStarted] = useState(false); // 是否确认开始了 quiz
+  const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false); // 控制弹窗
+  const isFinished = game.oldSessions.length > 0 ? true : false;
+  const navigate = useNavigate();
+  console.log("finish", isFinished);
+
+  console.log(game);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const startPolling = () => {
+      interval = setInterval(async () => {
+        if (!game.active) return;
+        const data = await onCheckStatus(game.active);
+
+        if (data?.results.position !== undefined) {
+          const pos = data.results.position;
+          const startedAt = new Date(data.results.isoTimeLastQuestionStarted);
+          const duration = game.questions.at(-1)?.duration ?? 0;
+          const endTime = new Date(startedAt.getTime() + duration * 1000);
+          const now = new Date();
+          console.log(pos);
+          console.log(game.questions.length - 1);
+          if (pos === game.questions.length - 1) {
+            if (now >= endTime) {
+              console.log("✅ Time's up. Stopping session...");
+              onStopSession(game.id);
+              clearInterval(interval);
+            } else {
+              console.log("🕒 Last question still in progress...");
+            }
+          }
+        }
+      }, 1000);
+    };
+
+    startPolling();
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [
+    game.active,
+    game.questions.length,
+    onCheckStatus,
+    onStopSession,
+    game.id,
+  ]);
 
   const [showConfirm, setShowConfirm] = useState(false);
   const totalDuration = game.questions.reduce(
@@ -109,8 +168,10 @@ const GameCard = ({
           </div>
         </div>
       )}
-      <div className="p-2 border-t flex justify-between">
+      <div className="p-2 border-t flex flex-wrap gap-2 justify-between">
+        {/* 主按钮 */}
         <Button
+          disabled={isFinished}
           className={`relative ${
             isActive ? "bg-yellow-600 hover:bg-red-600" : ""
           }`}
@@ -120,8 +181,64 @@ const GameCard = ({
           onMouseEnter={() => isActive && setHovered(true)}
           onMouseLeave={() => isActive && setHovered(false)}
         >
-          {isActive ? (hovered ? "Stop Game" : "In Progress") : "Start Game"}
+          {isFinished
+            ? "Game Played"
+            : isActive
+            ? hovered
+              ? "Stop Game"
+              : "In Progress"
+            : "Start Game"}
         </Button>
+
+        {/* Start Quiz  */}
+        {isActive && !quizStarted && !isFinished && (
+          <Button
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setShowStartQuizConfirm(true)}
+          >
+            Start Quiz
+          </Button>
+        )}
+
+        {/* Show Result  */}
+        {isFinished && (
+          <Button
+            variant="outline"
+            className="text-green-600 border-green-600 hover:bg-green-50"
+            onClick={() => {
+              // TODO: replace with your actual navigation logic
+              navigate(`/session/${game.active}`);
+            }}
+          >
+            Show Result
+          </Button>
+        )}
+
+        {showStartQuizConfirm && (
+          <div className="absolute z-20 top-4 right-4 bg-white border border-gray-300 p-4 rounded shadow">
+            <p className="text-sm text-gray-700 mb-2">
+              Are you sure you want to start the quiz?
+            </p>
+            <div className="flex gap-2">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  onAdvanceGame(game.id);
+                  setQuizStarted(true);
+                  setShowStartQuizConfirm(false);
+                }}
+              >
+                Yes, Start
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowStartQuizConfirm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

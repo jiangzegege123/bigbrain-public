@@ -12,6 +12,7 @@ import { loadGames, createGame } from "@/api/game";
 import { mutateGameState } from "@/api/session";
 import { useNavigate } from "react-router-dom";
 import SessionResultModal from "@/components/session/SessionResultModal";
+import { checkSessionStatus } from "@/api/session";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
@@ -31,7 +32,6 @@ const Dashboard = () => {
   const handleStartSession = async (gameId: number) => {
     try {
       const data = await mutateGameState(token!, gameId, "START");
-      console.log(data);
       setSessionId(data.sessionId);
       await loadGames(token!, setGames, setError);
       setShowSessionModal(true);
@@ -44,9 +44,18 @@ const Dashboard = () => {
     }
   };
 
+  const checkStatus = async (sessionId: string) => {
+    try {
+      const data = await checkSessionStatus(token!, sessionId);
+      console.log("data", data);
+      return data;
+    } catch (err) {
+      console.error("Failed to check status:", err);
+    }
+  };
+
   const handleStopSession = async (gameId: number) => {
     try {
-      const data = await mutateGameState(token!, gameId, "END");
       await loadGames(token!, setGames, setError);
       const activeGame = games.find((g) => g.id === gameId);
       if (activeGame?.active != null) {
@@ -62,11 +71,27 @@ const Dashboard = () => {
       );
     }
   };
+
+  const handleAdvanceGame = async (gameId: number) => {
+    try {
+      await mutateGameState(token!, gameId, "advance");
+      await loadGames(token!, setGames, setError);
+    } catch (err) {
+      console.error("Failed to advance game:", err);
+      alert(
+        "Failed to advance game: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
+    }
+  };
+
   // Handle new game creation
   const handleCreateGame = async (name: string) => {
     const created = await createGame(token!, email!, name, setGames, setError);
     if (created) {
       setShowModal(false);
+      navigate(`/sessions/${sessionId}`);
+
       // navigate(`/game/${created.id}`, { state: { game: created } });
     }
   };
@@ -118,6 +143,8 @@ const Dashboard = () => {
                 onDelete={handleDeleteGame}
                 onStartSession={handleStartSession}
                 onStopSession={handleStopSession}
+                onAdvanceGame={handleAdvanceGame}
+                onCheckStatus={checkStatus}
               />
             ))}
           </div>

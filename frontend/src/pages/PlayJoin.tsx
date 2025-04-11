@@ -25,7 +25,6 @@ const PlayJoin = () => {
     const checkStatus = async () => {
       try {
         const status = await checkSessionStatus(token!, sessionId!);
-        console.log("session status", status);
         setSessionStarted(status.active); // active 为 true 表示游戏已开始
         setSessionValid(true);
       } catch (err) {
