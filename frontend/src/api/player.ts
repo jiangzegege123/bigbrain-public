@@ -19,14 +19,17 @@ export const getPlayerStatus = async (
 export const getCurrentQuestion = async (playerId: string): Promise<any> => {
   return await apiFetch(`/play/${playerId}/question`);
 };
-
 export const submitAnswer = async (
   playerId: string,
   answer: number[] | number
 ): Promise<void> => {
+  const answerIds = Array.isArray(answer) ? answer : [answer]; // 保证是数组
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",
-    body: JSON.stringify({ answer }),
+    body: JSON.stringify({ answerIds }),
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 };
 

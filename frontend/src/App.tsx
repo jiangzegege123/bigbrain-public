@@ -8,6 +8,7 @@ import SessionResults from "./pages/SessionResults";
 import Play from "./pages/Play";
 import PlayJoin from "./pages/PlayJoin";
 import PlayerGame from "./pages/PlayerGame";
+import GameSessionResult from "@/pages/GameSessionResult";
 
 function App() {
   return (
@@ -27,6 +28,10 @@ function App() {
       <Route path="/play" element={<Play />} />
       <Route path="/play/:sessionId" element={<Play />} />
       <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />
+      <Route
+        path="/play/:sessionId/:playerId/Result"
+        element={<GameSessionResult />}
+      />
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>
   );

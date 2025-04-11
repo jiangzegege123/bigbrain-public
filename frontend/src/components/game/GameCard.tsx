@@ -36,10 +36,9 @@ const GameCard = ({
   const [quizStarted, setQuizStarted] = useState(false); // 是否确认开始了 quiz
   const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false); // 控制弹窗
   const isFinished = game.oldSessions.length > 0 ? true : false;
+  const [position, setPosition] = useState(-1);
   const navigate = useNavigate();
-  console.log("finish", isFinished);
 
-  console.log(game);
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -48,6 +47,9 @@ const GameCard = ({
         if (!game.active) return;
 
         const data = await onCheckStatus(game.active);
+        console.log(data);
+
+        setPosition(data?.results.position);
 
         if (data?.results.position !== undefined) {
           const pos = data.results.position;
@@ -55,8 +57,7 @@ const GameCard = ({
           const duration = game.questions.at(-1)?.duration ?? 0;
           const endTime = new Date(startedAt.getTime() + duration * 1000);
           const now = new Date();
-          console.log(pos);
-          console.log(game.questions.length - 1);
+
           if (pos === game.questions.length - 1) {
             if (now >= endTime) {
               console.log("✅ Time's up. Stopping session...");
@@ -192,12 +193,14 @@ const GameCard = ({
         </Button>
 
         {/* Start Quiz  */}
-        {isActive && !quizStarted && !isFinished && (
+        {isActive && !isFinished && (
           <Button
             className="bg-blue-600 hover:bg-blue-700"
             onClick={() => setShowStartQuizConfirm(true)}
           >
-            Start Quiz
+            {!quizStarted
+              ? "Start Quiz"
+              : `Next Question ${position + 1}/${game.questions.length}`}
           </Button>
         )}
 
@@ -225,6 +228,7 @@ const GameCard = ({
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => {
                   onAdvanceGame(game.id);
+                  setPosition((prev) => prev + 1);
                   setQuizStarted(true);
                   setShowStartQuizConfirm(false);
                 }}
