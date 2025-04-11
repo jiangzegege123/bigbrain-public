@@ -15,7 +15,6 @@ const Play = () => {
   const [sessionId, setSessionId] = useState(params.sessionId || "");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(!!params.sessionId);
   const [sessionValid, setSessionValid] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
 
@@ -30,8 +29,6 @@ const Play = () => {
         setSessionValid(true);
       } catch (err) {
         setSessionValid(false); // 游戏不存在
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -51,31 +48,6 @@ const Play = () => {
       setError("Failed to join session. Please try again.");
     }
   };
-
-  if (loading) {
-    return <div className="p-6 text-center">Checking session...</div>;
-  }
-
-  if (params.sessionId && !sessionValid) {
-    return (
-      <div className="p-6 text-center space-y-4">
-        <h2 className="text-xl font-bold text-red-600">Game not found</h2>
-        <Button onClick={() => navigate("/play")}>Back to Play Page</Button>
-      </div>
-    );
-  }
-
-  if (params.sessionId && sessionStarted) {
-    return (
-      <div className="p-6 text-center space-y-4">
-        <h2 className="text-xl font-bold text-orange-600">
-          Game already started
-        </h2>
-        <p>You can't join this session anymore.</p>
-        <Button onClick={() => navigate("/play")}>Back to Play Page</Button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex items-center justify-center min-h-[700px] p-4">
