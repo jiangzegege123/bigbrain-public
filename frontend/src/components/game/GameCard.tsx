@@ -36,53 +36,53 @@ const GameCard = ({
   const [quizStarted, setQuizStarted] = useState(false); // 是否确认开始了 quiz
   const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false); // 控制弹窗
   const isFinished = game.oldSessions.length > 0 ? true : false;
-  const [position, setPosition] = useState(-1);
+  const [position, setPosition] = useState(0);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
+  // useEffect(() => {
+  //   let interval: NodeJS.Timeout;
 
-    const startPolling = () => {
-      interval = setInterval(async () => {
-        if (!game.active) return;
+  //   const startPolling = () => {
+  //     interval = setInterval(async () => {
+  //       if (!game.active) return;
 
-        const data = await onCheckStatus(game.active);
-        console.log(data);
+  //       const data = await onCheckStatus(game.active);
+  //       console.log(data);
 
-        setPosition(data?.results.position);
+  //       setPosition(data?.results.position);
 
-        if (data?.results.position !== undefined) {
-          const pos = data.results.position;
-          const startedAt = new Date(data.results.isoTimeLastQuestionStarted);
-          const duration = game.questions.at(-1)?.duration ?? 0;
-          const endTime = new Date(startedAt.getTime() + duration * 1000);
-          const now = new Date();
+  //       // if (data?.results.position !== undefined) {
+  //       //   const pos = data.results.position;
+  //       //   const startedAt = new Date(data.results.isoTimeLastQuestionStarted);
+  //       //   const duration = game.questions.at(-1)?.duration ?? 0;
+  //       //   const endTime = new Date(startedAt.getTime() + duration * 1000);
+  //       //   const now = new Date();
 
-          if (pos === game.questions.length - 1) {
-            if (now >= endTime) {
-              console.log("✅ Time's up. Stopping session...");
-              onStopSession(game.id);
-              clearInterval(interval);
-            } else {
-              console.log("🕒 Last question still in progress...");
-            }
-          }
-        }
-      }, 1000);
-    };
+  //       //   if (pos === game.questions.length - 1) {
+  //       //     if (now >= endTime) {
+  //       //       console.log("✅ Time's up. Stopping session...");
+  //       //       onStopSession(game.id);
+  //       //       clearInterval(interval);
+  //       //     } else {
+  //       //       console.log("🕒 Last question still in progress...");
+  //       //     }
+  //       //   }
+  //       // }
+  //     }, 1000);
+  //   };
 
-    startPolling();
+  //   startPolling();
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [
-    game.active,
-    game.questions.length,
-    onCheckStatus,
-    onStopSession,
-    game.id,
-  ]);
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, [
+  //   game.active,
+  //   game.questions.length,
+  //   onCheckStatus,
+  //   onStopSession,
+  //   game.id,
+  // ]);
 
   const [showConfirm, setShowConfirm] = useState(false);
   const totalDuration = game.questions.reduce(
@@ -200,7 +200,7 @@ const GameCard = ({
           >
             {!quizStarted
               ? "Start Quiz"
-              : `Next Question ${position + 1}/${game.questions.length}`}
+              : `Next Question ${position}/${game.questions.length}`}
           </Button>
         )}
 
@@ -221,20 +221,41 @@ const GameCard = ({
         {showStartQuizConfirm && (
           <div className="absolute z-20 top-4 right-4 bg-white border border-gray-300 p-4 rounded shadow">
             <p className="text-sm text-gray-700 mb-2">
-              Are you sure you want to start the quiz?
+              {!quizStarted
+                ? "Are you sure you want to start the quiz?"
+                : "Do you want to move to the next question?"}
             </p>
             <div className="flex gap-2">
-              <Button
+              {/* <Button
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => {
                   onAdvanceGame(game.id);
                   setPosition((prev) => prev + 1);
+
                   setQuizStarted(true);
                   setShowStartQuizConfirm(false);
                 }}
               >
                 Yes, Start
+              </Button> */}
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  if (position >= game.questions.length) {
+                    alert("There are no more questions.");
+                    setShowStartQuizConfirm(false);
+                    return;
+                  }
+
+                  onAdvanceGame(game.id);
+                  setQuizStarted(true);
+                  setPosition((prev) => prev + 1);
+                  setShowStartQuizConfirm(false);
+                }}
+              >
+                {quizStarted ? "Yes, Next" : "Yes, Start"}
               </Button>
+
               <Button
                 variant="outline"
                 onClick={() => setShowStartQuizConfirm(false)}

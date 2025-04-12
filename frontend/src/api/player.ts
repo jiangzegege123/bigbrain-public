@@ -19,6 +19,7 @@ export const getPlayerStatus = async (
 export const getCurrentQuestion = async (playerId: string): Promise<any> => {
   return await apiFetch(`/play/${playerId}/question`);
 };
+
 export const submitAnswer = async (
   playerId: string,
   answer: number[] | number
@@ -35,7 +36,7 @@ export const submitAnswer = async (
 
 export const getCorrectAnswer = async (
   playerId: string
-): Promise<{ answer: number[] }> => {
+): Promise<{ answerIds: number[] }> => {
   return await apiFetch(`/play/${playerId}/answer`);
 };
 

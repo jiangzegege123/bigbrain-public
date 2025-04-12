@@ -14,18 +14,24 @@ const PlayerGame = () => {
   const [selected, setSelected] = useState<number | null>(null);
   const [correct, setCorrect] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
-  const [started, setStarted] = useState(true);
   const navigate = useNavigate();
-  // 轮询拉题 + 倒计时
+
+  // 每秒轮询获取题目和更新时间
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const start = await getPlayerStatus(playerId!);
-        console.log(start);
-        const q = await getCurrentQuestion(playerId!);
+        await getPlayerStatus(playerId!); // 预防 session 被 stop 掉
 
+        const q = await getCurrentQuestion(playerId!);
         if (q) {
-          setQuestion(q);
+          // 检查是否是新题目，如果是就重置状态
+          if (!question || q.question.question !== question.question.question) {
+            setQuestion(q);
+            setSelected(null);
+            setCorrect(null);
+          }
+
+          console.log(question);
 
           const startedAt = new Date(q.question.isoTimeLastQuestionStarted);
           const now = new Date();
@@ -36,8 +42,12 @@ const PlayerGame = () => {
           const remaining = Math.max(total - elapsed, 0);
           setRemainingTime(remaining);
 
+          const answer = await getCorrectAnswer(playerId!);
+          console.log(answer);
+
           if (remaining === 0 && correct === null) {
             const answerData = await getCorrectAnswer(playerId!);
+            console.log(answerData);
             setCorrect(answerData.answer);
           }
         }
@@ -51,20 +61,20 @@ const PlayerGame = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [playerId, correct]);
+  }, [playerId, correct, question]);
 
   // 用户点击选项时立即提交
   const handleSelect = async (idx: number) => {
     setSelected(idx);
     try {
-      await submitAnswer(playerId!, idx); // ✅ 提交用户答案
+      await submitAnswer(playerId!, idx);
       console.log("Answer submitted:", idx);
     } catch (err) {
       console.error("Failed to submit answer:", err);
     }
   };
 
-  // 等待开始
+  // 等待游戏开始
   if (!question) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -74,10 +84,6 @@ const PlayerGame = () => {
         </div>
       </div>
     );
-  }
-
-  if (!started) {
-    navigate(`${location.pathname}/result`);
   }
 
   return (
