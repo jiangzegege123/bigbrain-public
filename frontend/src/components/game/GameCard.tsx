@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,16 +11,6 @@ interface GameCardProps {
   onStartSession: (id: number) => void;
   onStopSession: (id: number) => void;
   onAdvanceGame: (id: number) => void;
-  onCheckStatus: (id: number) => Promise<SessionStatusData | undefined>;
-}
-
-interface SessionStatusData {
-  results: {
-    active: boolean;
-    answerAvailable: boolean;
-    isoTimeLastQuestionStarted: string | null;
-    position: number;
-  };
 }
 
 const GameCard = ({
@@ -31,7 +19,6 @@ const GameCard = ({
   onStartSession,
   onStopSession,
   onAdvanceGame,
-  onCheckStatus,
 }: GameCardProps) => {
   const isActive = game.active != null;
   const [quizStarted, setQuizStarted] = useState(false);

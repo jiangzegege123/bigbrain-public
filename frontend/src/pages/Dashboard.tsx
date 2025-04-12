@@ -2,27 +2,21 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchGames, updateGames } from "@/api/game";
 import Navbar from "@/components/NavBar";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import type { Game } from "@/types/index";
 import GameCard from "@/components/game/GameCard";
 import GameCreateModal from "@/components/game/GameCreateModal";
 import EmptyState from "@/components/ui/EmptyState";
 import { loadGames, createGame } from "@/api/game";
 import { mutateGameState } from "@/api/session";
-import { useNavigate } from "react-router-dom";
-import SessionResultModal from "@/components/session/SessionResultModal";
-import { checkSessionStatus } from "@/api/session";
+// import SessionResultModal from "@/components/session/SessionResultModal";
+import { GamesHeader } from "@/components/game/GamesHeader";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [showSessionModal, setShowSessionModal] = useState(false);
-  const navigate = useNavigate();
-  const [showResultModal, setShowResultModal] = useState(false);
+  // const [showResultModal, setShowResultModal] = useState(false);
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -41,10 +35,8 @@ const Dashboard = () => {
     }
 
     try {
-      const data = await mutateGameState(token!, gameId, "START");
-      setSessionId(data.sessionId);
+      await mutateGameState(token!, gameId, "START");
       await loadGames(token!, setGames, setError);
-      setShowSessionModal(true);
     } catch (err) {
       console.error("Failed to start session:", err);
       alert(
@@ -54,27 +46,12 @@ const Dashboard = () => {
     }
   };
 
-  const checkStatus = async (sessionId: string) => {
-    setError("");
-
-    try {
-      const data = await checkSessionStatus(token!, sessionId);
-      return data;
-    } catch (err) {
-      console.error("Failed to check status:", err);
-    }
-  };
-
   const handleStopSession = async (gameId: number) => {
     setError("");
 
     try {
-      const data = await mutateGameState(token!, gameId, "END");
+      await mutateGameState(token!, gameId, "END");
       await loadGames(token!, setGames, setError);
-      const activeGame = games.find((g) => g.id === gameId);
-      if (activeGame?.active != null) {
-        setSessionId(String(activeGame.active));
-      }
 
       // setShowResultModal(true);
     } catch (err) {
@@ -135,21 +112,11 @@ const Dashboard = () => {
       <div className="bg-gray-50 min-h-screen p-6">
         <div className="container mx-auto">
           {/* Header with title and add button */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Your Games</h1>
-              <p className="text-gray-500 mt-1">
-                Manage and create interactive quiz games
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2"
-            >
-              <PlusCircle className="h-4 w-4" />
-              <span>Add Game</span>
-            </Button>
-          </div>
+          <GamesHeader
+            title="Your Games"
+            description="Manage and create interactive quiz games"
+            onAddGame={() => setShowModal(true)}
+          />
 
           {/* 🔴 Error message */}
           {error && (
@@ -166,7 +133,6 @@ const Dashboard = () => {
                 onStartSession={handleStartSession}
                 onStopSession={handleStopSession}
                 onAdvanceGame={handleAdvanceGame}
-                onCheckStatus={checkStatus}
               />
             ))}
           </div>
@@ -189,58 +155,13 @@ const Dashboard = () => {
           onCreate={handleCreateGame}
         />
       )}
-      {error && (
-        <div className="text-center mt-4 text-red-500 text-sm">{error}</div>
-      )}
-      {showSessionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Session Started</h2>
-            <p>Your session ID:</p>
-            <input
-              type="text"
-              readOnly
-              value={`http://localhost:3000/play/${sessionId}`}
-              className="border p-2 mt-2 w-full rounded"
-            />
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() =>
-                  navigator.clipboard.writeText(
-                    `http://localhost:3000/play/${sessionId}`
-                  )
-                }
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Copy Link
-              </button>
-              <button
-                onClick={() => {
-                  setShowSessionModal(false);
-                  navigate(`/play/${sessionId}`);
-                }}
-                className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
-              >
-                Go to Play Page
-              </button>
-            </div>
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setShowSessionModal(false)}
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Back to Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {showResultModal && sessionId && (
+
+      {/* {showResultModal && sessionId && (
         <SessionResultModal
           sessionId={sessionId}
           onClose={() => setShowResultModal(false)}
         />
-      )}
+      )} */}
     </>
   );
 };
