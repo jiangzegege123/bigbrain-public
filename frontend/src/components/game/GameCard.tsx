@@ -20,10 +20,17 @@ const GameCard = ({
   onStopSession,
   onAdvanceGame,
 }: GameCardProps) => {
+  const initialPosition = (() => {
+    const saved = localStorage.getItem(`position-${game.id}`);
+    return saved ? parseInt(saved, 10) : 0;
+  })();
   const isActive = game.active != null;
-  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(initialPosition > 0);
   const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false);
-  const [position, setPosition] = useState(0);
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem(`position-${game.id}`);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [showConfirm, setShowConfirm] = useState(false);
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
@@ -51,8 +58,6 @@ const GameCard = ({
     e.stopPropagation();
     setShowConfirm(false);
   };
-
-  console.log(game);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow hover:shadow-md transition group relative">
@@ -121,9 +126,16 @@ const GameCard = ({
                 ? "bg-yellow-600 hover:bg-red-600 text-white"
                 : "bg-emerald-600 hover:bg-emerald-700 text-white"
             }`}
-            onClick={() =>
-              isActive ? onStopSession?.(game.id) : onStartSession?.(game.id)
-            }
+            onClick={() => {
+              if (isActive) {
+                onStopSession?.(game.id!);
+                localStorage.removeItem(`position-${game.id}`);
+                setPosition(0);
+                setQuizStarted(false);
+              } else {
+                onStartSession?.(game.id!);
+              }
+            }}
             onMouseEnter={() => isActive && setHovered(true)}
             onMouseLeave={() => isActive && setHovered(false)}
           >
@@ -203,9 +215,16 @@ const GameCard = ({
                     setShowStartQuizConfirm(false);
                     return;
                   }
-                  onAdvanceGame(game.id);
+                  onAdvanceGame(game.id!);
                   setQuizStarted(true);
-                  setPosition((prev) => prev + 1);
+                  const newPosition = position + 1;
+
+                  setPosition(newPosition);
+                  localStorage.setItem(
+                    `position-${game.id}`,
+                    newPosition.toString()
+                  );
+
                   setShowStartQuizConfirm(false);
                 }}
               >

@@ -6,9 +6,7 @@ import GameEdit from "./pages/GameEdit";
 import QuestionEdit from "@/pages/QuestionEdit";
 import SessionResults from "./pages/SessionResults";
 import Play from "./pages/Play";
-import PlayJoin from "./pages/PlayJoin";
 import PlayerGame from "./pages/PlayerGame";
-import GameSessionResult from "@/pages/GameSessionResult";
 import GameSessions from "./pages/GameSessions";
 
 function App() {
@@ -33,7 +31,7 @@ function App() {
       <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />
       <Route
         path="/play/:sessionId/:playerId/Result"
-        element={<GameSessionResult />}
+        element={<GameSessions />}
       />
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>

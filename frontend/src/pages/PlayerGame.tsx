@@ -31,8 +31,6 @@ const PlayerGame = () => {
             setCorrect(null);
           }
 
-          console.log(question);
-
           const startedAt = new Date(q.question.isoTimeLastQuestionStarted);
           const now = new Date();
           const elapsed = Math.floor(
@@ -42,12 +40,8 @@ const PlayerGame = () => {
           const remaining = Math.max(total - elapsed, 0);
           setRemainingTime(remaining);
 
-          const answer = await getCorrectAnswer(playerId!);
-          console.log(answer);
-
           if (remaining === 0 && correct === null) {
             const answerData = await getCorrectAnswer(playerId!);
-            console.log(answerData);
             setCorrect(answerData.answer);
           }
         }

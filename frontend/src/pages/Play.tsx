@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { UserIcon, GamepadIcon } from "lucide-react";
+import { UserIcon } from "lucide-react";
 import { joinSession } from "@/api/player";
 import { checkSessionStatus } from "@/api/session";
 import { useAuth } from "@/contexts/AuthContext";

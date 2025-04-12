@@ -67,7 +67,7 @@ const Dashboard = () => {
     setError("");
 
     try {
-      await mutateGameState(token!, gameId, "advance");
+      await mutateGameState(token!, gameId, "ADVANCE");
       await loadGames(token!, setGames, setError);
     } catch (err) {
       console.error("Failed to advance game:", err);

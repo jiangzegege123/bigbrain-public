@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { fetchGames, updateGames } from "@/api/game";
-import type { Game, Question } from "@/types/index";
+import type { Game } from "@/types/index";
 import Navbar from "@/components/NavBar";
 import { PlusCircle, HelpCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
