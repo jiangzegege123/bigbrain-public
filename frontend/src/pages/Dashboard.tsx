@@ -162,12 +162,13 @@ const Dashboard = () => {
           <div className="bg-white rounded shadow-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Session Started</h2>
             <p>Your session ID:</p>
-            <input
+            {/* <input
               type="text"
               readOnly
               value={`http://localhost:3000/play/${sessionId}`}
               className="border p-2 mt-2 w-full rounded"
-            />
+            /> */}
+            <p>{sessionId}</p>
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() =>

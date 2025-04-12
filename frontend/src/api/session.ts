@@ -35,15 +35,15 @@ export const getSessionResults = async (
   return response;
 };
 
-export const checkSessionStatus = async (
-  token: string,
-  sessionId: string
-): Promise<any> => {
-  const res = await apiFetch(`/admin/session/${sessionId}/status`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res;
-};
+// export const checkSessionStatus = async (
+//   token: string,
+//   sessionId: string
+// ): Promise<any> => {
+//   const res = await apiFetch(`/admin/session/${sessionId}/status`, {
+//     method: "GET",
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+//   return res;
+// };

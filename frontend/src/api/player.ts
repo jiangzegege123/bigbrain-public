@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/utils";
+import { Question } from "@/types";
 
 export const joinSession = async (
   sessionId: string,
@@ -12,12 +13,15 @@ export const joinSession = async (
 
 export const getPlayerStatus = async (
   playerId: string
-): Promise<{ stage: string }> => {
+): Promise<{ started: boolean }> => {
   return await apiFetch(`/play/${playerId}/status`);
 };
 
-export const getCurrentQuestion = async (playerId: string): Promise<any> => {
-  return await apiFetch(`/play/${playerId}/question`);
+export const getCurrentQuestion = async (
+  playerId: string
+): Promise<Question> => {
+  const data = await apiFetch(`/play/${playerId}/question`);
+  return data.question;
 };
 
 export const submitAnswer = async (
@@ -40,6 +44,6 @@ export const getCorrectAnswer = async (
   return await apiFetch(`/play/${playerId}/answer`);
 };
 
-export const getPlayerResults = async (playerId: string): Promise<any> => {
-  return await apiFetch(`/play/${playerId}/results`);
-};
+// export const getPlayerResults = async (playerId: string): Promise<any> => {
+//   return await apiFetch(`/play/${playerId}/results`);
+// };

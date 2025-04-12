@@ -3,6 +3,7 @@ export interface Question {
   question: string;
   duration: number;
   points: number;
+  isoTimeLastQuestionStarted: string;
   media?: string;
   type: "single" | "multiple" | "judgement";
   options: {
