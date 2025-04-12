@@ -1,11 +1,12 @@
-import type React from "react";
+"use client";
 
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import type React from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Clock, HelpCircle, Gamepad2, X } from "lucide-react";
 import type { Game, Question } from "@/types/index";
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
+
 interface GameCardProps {
   game: Game;
   onDelete: (id: number) => void;
@@ -23,6 +24,7 @@ interface SessionStatusData {
     position: number;
   };
 }
+
 const GameCard = ({
   game,
   onDelete,
@@ -32,59 +34,13 @@ const GameCard = ({
   onCheckStatus,
 }: GameCardProps) => {
   const isActive = game.active != null;
-
-  const [quizStarted, setQuizStarted] = useState(false); // 是否确认开始了 quiz
-  const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false); // 控制弹窗
-  const isFinished = game.oldSessions.length > 0 ? true : false;
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false);
   const [position, setPosition] = useState(0);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   let interval: NodeJS.Timeout;
-
-  //   const startPolling = () => {
-  //     interval = setInterval(async () => {
-  //       if (!game.active) return;
-
-  //       const data = await onCheckStatus(game.active);
-  //       console.log(data);
-
-  //       setPosition(data?.results.position);
-
-  //       // if (data?.results.position !== undefined) {
-  //       //   const pos = data.results.position;
-  //       //   const startedAt = new Date(data.results.isoTimeLastQuestionStarted);
-  //       //   const duration = game.questions.at(-1)?.duration ?? 0;
-  //       //   const endTime = new Date(startedAt.getTime() + duration * 1000);
-  //       //   const now = new Date();
-
-  //       //   if (pos === game.questions.length - 1) {
-  //       //     if (now >= endTime) {
-  //       //       console.log("✅ Time's up. Stopping session...");
-  //       //       onStopSession(game.id);
-  //       //       clearInterval(interval);
-  //       //     } else {
-  //       //       console.log("🕒 Last question still in progress...");
-  //       //     }
-  //       //   }
-  //       // }
-  //     }, 1000);
-  //   };
-
-  //   startPolling();
-
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, [
-  //   game.active,
-  //   game.questions.length,
-  //   onCheckStatus,
-  //   onStopSession,
-  //   game.id,
-  // ]);
-
-  const [showConfirm, setShowConfirm] = useState(false);
   const totalDuration = game.questions.reduce(
     (sum: number, q: Question) => sum + q.duration,
     0
@@ -109,7 +65,7 @@ const GameCard = ({
     setShowConfirm(false);
   };
 
-  const [hovered, setHovered] = useState(false);
+  console.log(game);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow hover:shadow-md transition group relative">
@@ -143,7 +99,6 @@ const GameCard = ({
         </div>
       </Link>
 
-      {/* Delete button */}
       {!showConfirm ? (
         <button
           onClick={handleDeleteClick}
@@ -170,52 +125,79 @@ const GameCard = ({
           </div>
         </div>
       )}
-      <div className="p-2 border-t flex flex-wrap gap-2 justify-between">
-        {/* 主按钮 */}
-        <Button
-          disabled={isFinished}
-          className={`relative ${
-            isActive ? "bg-yellow-600 hover:bg-red-600" : ""
-          }`}
-          onClick={() =>
-            isActive ? onStopSession?.(game.id) : onStartSession?.(game.id)
-          }
-          onMouseEnter={() => isActive && setHovered(true)}
-          onMouseLeave={() => isActive && setHovered(false)}
-        >
-          {isFinished
-            ? "Game Played"
-            : isActive
-            ? hovered
-              ? "Stop Game"
-              : "In Progress"
-            : "Start Game"}
-        </Button>
 
-        {/* Start Quiz  */}
-        {isActive && !isFinished && (
+      <div className="p-2 border-t">
+        <div className="flex flex-wrap gap-2">
           <Button
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => setShowStartQuizConfirm(true)}
+            className={`flex-1 min-w-[120px] text-sm font-medium transition-colors ${
+              isActive
+                ? "bg-yellow-600 hover:bg-red-600 text-white"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+            }`}
+            onClick={() =>
+              isActive ? onStopSession?.(game.id) : onStartSession?.(game.id)
+            }
+            onMouseEnter={() => isActive && setHovered(true)}
+            onMouseLeave={() => isActive && setHovered(false)}
           >
-            {!quizStarted
-              ? "Start Quiz"
-              : `Next Question ${position}/${game.questions.length}`}
+            {isActive ? (hovered ? "Stop Game" : "In Progress") : "Start Game"}
           </Button>
-        )}
 
-        {/* Show Result  */}
-        {isFinished && (
+          {isActive && (
+            <Button
+              className="flex-1 min-w-[120px] text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => setShowStartQuizConfirm(true)}
+            >
+              {!quizStarted
+                ? "Start Quiz"
+                : `Next Question ${position}/${game.questions.length}`}
+            </Button>
+          )}
+
           <Button
             variant="outline"
-            className="text-green-600 border-green-600 hover:bg-green-50"
-            onClick={() => {
-              // TODO: replace with your actual navigation logic
-              navigate(`/session/${game.oldSessions[0]}`);
-            }}
+            className="flex-1 min-w-[120px] text-sm font-medium border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+            onClick={() => navigate(`/game/${game.id}/sessions`)}
           >
-            Show Result
+            View Sessions
           </Button>
+        </div>
+
+        {isActive && (
+          <div className="mt-2 flex items-center justify-center">
+            <button
+              className="group flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/play/${game.active}`
+                );
+                // Optional: Add visual feedback
+                const target = e.currentTarget;
+                target.classList.add("text-green-600");
+                target.innerText = "Link copied!";
+                setTimeout(() => {
+                  target.classList.remove("text-green-600");
+                  target.innerText = "Copy join link";
+                }, 2000);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy join link
+            </button>
+          </div>
         )}
 
         {showStartQuizConfirm && (
@@ -226,18 +208,6 @@ const GameCard = ({
                 : "Do you want to move to the next question?"}
             </p>
             <div className="flex gap-2">
-              {/* <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => {
-                  onAdvanceGame(game.id);
-                  setPosition((prev) => prev + 1);
-
-                  setQuizStarted(true);
-                  setShowStartQuizConfirm(false);
-                }}
-              >
-                Yes, Start
-              </Button> */}
               <Button
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => {
@@ -246,7 +216,6 @@ const GameCard = ({
                     setShowStartQuizConfirm(false);
                     return;
                   }
-
                   onAdvanceGame(game.id);
                   setQuizStarted(true);
                   setPosition((prev) => prev + 1);
@@ -255,7 +224,6 @@ const GameCard = ({
               >
                 {quizStarted ? "Yes, Next" : "Yes, Start"}
               </Button>
-
               <Button
                 variant="outline"
                 onClick={() => setShowStartQuizConfirm(false)}

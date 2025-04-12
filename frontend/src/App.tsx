@@ -9,6 +9,7 @@ import Play from "./pages/Play";
 import PlayJoin from "./pages/PlayJoin";
 import PlayerGame from "./pages/PlayerGame";
 import GameSessionResult from "@/pages/GameSessionResult";
+import GameSessions from "./pages/GameSessions";
 
 function App() {
   return (
@@ -16,8 +17,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
+
       <Route path="/game/:gameId" element={<GameEdit />} />
       <Route path="/game/:gameId/question/new" element={<QuestionEdit />} />
+      <Route path="/game/:gameId/sessions" element={<GameSessions />} />
 
       <Route
         path="/game/:gameId/question/:questionId"
