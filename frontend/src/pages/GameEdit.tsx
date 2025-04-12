@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { fetchGames, updateGames } from "@/api/game";
 import type { Game } from "@/types/index";
 import Navbar from "@/components/NavBar";
-import { PlusCircle, HelpCircle } from "lucide-react";
+import { PlusCircle, HelpCircle, Upload, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuestionCard from "@/components/game/QuestionCard";
 
@@ -56,6 +56,31 @@ const GameEdit = () => {
     }
   };
 
+  const handleThumbnailUpload = (file: File) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      if (!game || !token) return;
+
+      const updatedGame = { ...game, thumbnail: base64 };
+
+      try {
+        const { games } = await fetchGames(token);
+        const updatedGames = games.map((g: Game) =>
+          g.id === game.id ? updatedGame : g
+        );
+        await updateGames(token, updatedGames);
+        setGame(updatedGame);
+      } catch (err) {
+        if (err instanceof Error) setError(err.message);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   if (!game)
     return (
       <>
@@ -95,6 +120,83 @@ const GameEdit = () => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+        </div>
+
+        {/* Compact Thumbnail Upload */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Thumbnail Preview */}
+            <div className="relative">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 border border-gray-200 rounded-md overflow-hidden flex items-center justify-center">
+                {game.thumbnail ? (
+                  <img
+                    src={game.thumbnail || "/placeholder.svg"}
+                    alt="Game thumbnail"
+                    className="w-full h-full object-contain p-1"
+                  />
+                ) : (
+                  <Upload className="h-6 w-6 text-gray-400" />
+                )}
+              </div>
+              {game.thumbnail && (
+                <button
+                  onClick={async () => {
+                    if (!game || !token) return;
+                    try {
+                      const updatedGame = { ...game, thumbnail: "" };
+                      const { games } = await fetchGames(token);
+                      const updatedGames = games.map((g: Game) =>
+                        g.id === game.id ? updatedGame : g
+                      );
+                      await updateGames(token, updatedGames);
+                      setGame(updatedGame);
+                    } catch (err) {
+                      if (err instanceof Error) setError(err.message);
+                    }
+                  }}
+                  className="absolute -top-2 -right-2 bg-gray-800/70 text-white p-1 rounded-full hover:bg-gray-900/70 transition-colors"
+                  aria-label="Remove thumbnail"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Upload Controls */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Game Thumbnail
+              </label>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative overflow-hidden"
+                  onClick={() =>
+                    document.getElementById("thumbnail-upload")?.click()
+                  }
+                >
+                  <input
+                    id="thumbnail-upload"
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleThumbnailUpload(file);
+                    }}
+                  />
+                  <Upload className="h-4 w-4 mr-1" /> Choose File
+                </Button>
+                <span className="text-xs text-gray-500">
+                  or drag image here
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Supports all image formats
+              </p>
+            </div>
+          </div>
         </div>
 
         {game.questions.length === 0 ? (
