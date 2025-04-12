@@ -10,12 +10,18 @@ import { loadGames, createGame } from "@/api/game";
 import { mutateGameState } from "@/api/session";
 // import SessionResultModal from "@/components/session/SessionResultModal";
 import { GamesHeader } from "@/components/game/GamesHeader";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
   const [error, setError] = useState("");
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const navigate = useNavigate();
+
   // const [showResultModal, setShowResultModal] = useState(false);
 
   // Fetch all games when token changes
@@ -35,8 +41,12 @@ const Dashboard = () => {
     }
 
     try {
-      await mutateGameState(token!, gameId, "START");
+      const data = await mutateGameState(token!, gameId, "START");
+      console.log(data);
+      setSessionId(data.sessionId);
+
       await loadGames(token!, setGames, setError);
+      setShowSessionModal(true);
     } catch (err) {
       console.error("Failed to start session:", err);
       alert(
@@ -52,6 +62,10 @@ const Dashboard = () => {
     try {
       await mutateGameState(token!, gameId, "END");
       await loadGames(token!, setGames, setError);
+      const activeGame = games.find((g) => g.id === gameId);
+      if (activeGame?.active != null) {
+        setSessionId(String(activeGame.active));
+      }
 
       // setShowResultModal(true);
     } catch (err) {
@@ -143,6 +157,49 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      {showSessionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Session Started</h2>
+            <p>Your session ID:</p>
+            <input
+              type="text"
+              readOnly
+              value={`http://localhost:3000/play/${sessionId}`}
+              className="border p-2 mt-2 w-full rounded"
+            />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `http://localhost:3000/play/${sessionId}`
+                  )
+                }
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Copy Link
+              </button>
+              <button
+                onClick={() => {
+                  setShowSessionModal(false);
+                  navigate(`/play/${sessionId}`);
+                }}
+                className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
+              >
+                Go to Play Page
+              </button>
+            </div>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowSessionModal(false)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal for creating a new game */}
       {showModal && (

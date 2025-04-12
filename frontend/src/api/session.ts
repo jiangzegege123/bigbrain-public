@@ -10,7 +10,7 @@ export const mutateGameState = async (
   token: string,
   gameId: number,
   mutationType: "START" | "ADVANCE" | "END"
-): Promise<void> => {
+): Promise<{ sessionId: string; status: string }> => {
   const res = await apiFetch(`/admin/game/${gameId}/mutate`, {
     method: "POST",
     headers: {

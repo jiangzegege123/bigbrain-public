@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/utils"; // 或者你的 apiFetch 所在路径
+import { apiFetch } from "@/lib/utils";
 
 export const joinSession = async (
   sessionId: string,
