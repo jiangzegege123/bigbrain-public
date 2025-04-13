@@ -36,7 +36,7 @@ export interface AdminSessionResult {
 export interface PlayerAnswer {
   questionStartedAt: string;
   answeredAt: string;
-  answers: number[];
+  answers: string[];
   correct: boolean;
 }
 

@@ -66,7 +66,10 @@ const QuestionCard = ({
 
           {/* Show delete button only if the question has a valid ID */}
           {typeof question.id === "number" && (
-            <Button variant="destructive" onClick={() => onDelete(question.id)}>
+            <Button
+              variant="destructive"
+              onClick={() => onDelete(question.id!)}
+            >
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
