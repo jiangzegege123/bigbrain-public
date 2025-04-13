@@ -6,6 +6,7 @@ export interface Question {
   isoTimeLastQuestionStarted: string;
   media?: string;
   type: "single" | "multiple" | "judgement";
+  correctAnswers?: string[];
   options: {
     text: string;
     isCorrect: boolean;

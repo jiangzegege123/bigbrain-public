@@ -485,6 +485,8 @@ export const getAnswers = (playerId) =>
 
 export const submitAnswers = (playerId, answersFromRequest) =>
   sessionLock((resolve, reject) => {
+    console.log("✅ Received answersFromRequest:", answersFromRequest);
+
     if (answersFromRequest === undefined || answersFromRequest.length === 0) {
       return reject(new InputError("Answers must be provided"));
     }
@@ -492,6 +494,8 @@ export const submitAnswers = (playerId, answersFromRequest) =>
     const session = getActiveSessionFromSessionId(
       sessionIdFromPlayerId(playerId)
     );
+    console.log("✅ session:", session);
+
     if (session.position === -1) {
       return reject(new InputError("Session has not started yet"));
     } else if (session.answerAvailable) {
@@ -500,6 +504,8 @@ export const submitAnswers = (playerId, answersFromRequest) =>
       );
     } else {
       const currentQuestion = session.questions[session.position];
+      console.log("✅ currentQuestion:", currentQuestion);
+      console.log("✅ answers:", session.players[playerId].answers);
       session.players[playerId].answers[session.position] = {
         questionStartedAt: session.isoTimeLastQuestionStarted,
         answeredAt: new Date().toISOString(),
@@ -508,6 +514,8 @@ export const submitAnswers = (playerId, answersFromRequest) =>
           JSON.stringify(currentQuestion.correctAnswers.sort()) ===
           JSON.stringify(answersFromRequest.sort()),
       };
+      console.log("✅ answers:", session.players[playerId].answers);
+
       resolve();
     }
   });

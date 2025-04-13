@@ -20,6 +20,7 @@ const GameCard = ({
   onStopSession,
   onAdvanceGame,
 }: GameCardProps) => {
+  console.log(game);
   const initialPosition = (() => {
     const saved = localStorage.getItem(`position-${game.id}`);
     return saved ? parseInt(saved, 10) : 0;

@@ -13,6 +13,7 @@ const PlayerGame = () => {
   const [question, setQuestion] = useState<Question | null>(null);
   const [started, setStarted] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -79,6 +80,37 @@ const PlayerGame = () => {
     };
   }, [pollingStarted, playerId, question]);
 
+  const handleOptionClick = async (idx: number) => {
+    if (!question || remainingTime! <= 0) return;
+
+    if (question.type === "single" || question.type === "judgement") {
+      setSelected([idx]);
+      try {
+        await submitAnswer(playerId!, [idx]);
+        console.log(`Answer ${idx} submitted`);
+      } catch (err) {
+        console.error("Failed to submit answer:", err);
+      }
+    } else if (question.type === "multiple") {
+      setSelected((prev) => {
+        const newSelected = prev.includes(idx)
+          ? prev.filter((i) => i !== idx)
+          : [...prev, idx];
+
+        // ⬇️ 提交当前 newSelected
+        submitAnswer(playerId!, newSelected)
+          .then(() => {
+            console.log("Submitted answers:", newSelected);
+          })
+          .catch((err) => {
+            console.error("Failed to submit answers:", err);
+          });
+
+        return newSelected;
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       {!started ? (
@@ -90,26 +122,19 @@ const PlayerGame = () => {
           {remainingTime! > 0 && <p>Remaining Time {remainingTime}</p>}
           <h2 className="text-2xl font-semibold mb-4">{question.question}</h2>
           <ul className="space-y-2">
-            {question.options.map((opt, idx) => (
-              <li key={idx} className="p-3 bg-gray-100 rounded">
-                <Button
-                  onClick={async () => {
-                    if (remainingTime && remainingTime > 0) {
-                      try {
-                        await submitAnswer(playerId!, idx);
-                        console.log(`Answer ${idx} submitted`);
-                      } catch (err) {
-                        console.error("Failed to submit answer:", err);
-                      }
-                    } else {
-                      console.warn("Time is up, cannot submit");
-                    }
-                  }}
-                >
-                  {opt.text}
-                </Button>
-              </li>
-            ))}
+            {question.options.map((opt, idx) => {
+              const isSelected = selected.includes(idx);
+              return (
+                <li key={idx} className="p-3 bg-gray-100 rounded">
+                  <Button
+                    variant={isSelected ? "secondary" : "default"}
+                    onClick={() => handleOptionClick(idx)}
+                  >
+                    {opt.text}
+                  </Button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : (

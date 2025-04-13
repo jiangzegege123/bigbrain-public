@@ -26,12 +26,13 @@ export const getCurrentQuestion = async (
 
 export const submitAnswer = async (
   playerId: string,
-  answer: number[] | number
+  answer: number[]
 ): Promise<void> => {
-  const answerIds = Array.isArray(answer) ? answer : [answer]; // 保证是数组
+  console.log("提交的数据：", JSON.stringify({ answers: answer }));
+
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",
-    body: JSON.stringify({ answerIds }),
+    body: JSON.stringify({ answers: answer }), // ✅ 必须是对象形式
     headers: {
       "Content-Type": "application/json",
     },

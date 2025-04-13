@@ -34,16 +34,19 @@ const QuestionEdit = () => {
     handleCorrectToggle,
     handleMediaUpload,
   } = useQuestionForm({
+    id: undefined,
     question: "",
     duration: 30,
     points: 100,
     type: "single",
+    isoTimeLastQuestionStarted: "",
+    media: "",
+    correctAnswers: [],
     options: [
       { text: "", isCorrect: false },
       { text: "", isCorrect: false },
     ],
   });
-
   const load = useCallback(async () => {
     try {
       const { games }: { games: Game[] } = await fetchGames(token!);
