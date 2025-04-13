@@ -1,12 +1,17 @@
-// import { useEffect, useState } from "react";
-import { getPlayerStatus } from "@/api/player";
+"use client";
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getCurrentQuestion } from "@/api/player";
-import { Question } from "@/types";
-import { Button } from "@/components/ui/button";
-import { submitAnswer } from "@/api/player";
-import { getCorrectAnswer } from "@/api/player";
+import {
+  getPlayerStatus,
+  getCurrentQuestion,
+  submitAnswer,
+  getCorrectAnswer,
+} from "@/api/player";
+import type { Question } from "@/types";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle, XCircle, Clock, Award, Loader2 } from "lucide-react";
 
 const PlayerGame = () => {
   const { playerId } = useParams<{ playerId: string; sessionId: string }>();
@@ -28,7 +33,7 @@ const PlayerGame = () => {
         console.log("Status:", status);
 
         if (status.started === true) {
-          clearInterval(interval); //
+          clearInterval(interval);
           setStarted(true);
           console.log("Status is true, fetching current question...");
           setPollingStarted(true);
@@ -135,64 +140,145 @@ const PlayerGame = () => {
     }
   };
 
+  const getProgressValue = () => {
+    if (!remainingTime || !question) return 0;
+    return (remainingTime / question.duration) * 100;
+  };
+
+  const getQuestionTypeLabel = () => {
+    if (!question) return "";
+    switch (question.type) {
+      case "single":
+        return "Single Choice";
+      case "multiple":
+        return "Multiple Choice";
+      case "judgement":
+        return "True/False";
+      default:
+        return question.type;
+    }
+  };
+
   return (
-    <div className="p-6">
-      {!started ? (
-        <div className="text-center text-gray-600 text-lg">
-          In the lobby... Waiting for the game to start.
-        </div>
-      ) : question ? (
-        <div>
-          {remainingTime! > 0 && <p>Remaining Time {remainingTime}</p>}
-          <h2 className="text-2xl font-semibold mb-4">{question.question}</h2>
-          <ul className="space-y-2">
-            {question.options.map((opt, idx) => {
-              const isSelected = selected.includes(idx);
-              const isCorrect = correctAnswers?.includes(idx);
-              const isTimeUp = remainingTime === 0;
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">
+      <Card className="max-w-3xl mx-auto shadow-lg">
+        <CardContent className="p-6 md:p-8">
+          {!started ? (
+            <div className="flex flex-col items-center justify-center py-16 space-y-4">
+              <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              <h2 className="text-2xl font-semibold text-center">
+                Waiting for the game to start...
+              </h2>
+              <p className="text-muted-foreground text-center">
+                Get ready! The quiz will begin soon.
+              </p>
+            </div>
+          ) : question ? (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                {remainingTime !== null && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-primary" />
+                        <span className="font-medium">
+                          {remainingTime > 0
+                            ? `${remainingTime}s remaining`
+                            : "Time's up!"}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium bg-primary/10 text-primary px-3 py-1 rounded-full">
+                        {getQuestionTypeLabel()}
+                      </span>
+                    </div>
+                    <Progress value={getProgressValue()} className="h-2" />
+                  </div>
+                )}
+                <h2 className="text-2xl font-bold mt-4">{question.question}</h2>
+              </div>
 
-              let variant: "default" | "outline" | "secondary" | "destructive" =
-                "default";
+              <div className="grid gap-3">
+                {question.options.map((opt, idx) => {
+                  const isSelected = selected.includes(idx);
+                  const isCorrect = correctAnswers?.includes(idx);
+                  const isTimeUp = remainingTime === 0;
 
-              if (isTimeUp) {
-                if (isCorrect) {
-                  variant = "outline"; // ✅ 正确答案：白底黑字
-                } else if (isSelected) {
-                  variant = "destructive"; // ❌ 你选了但错了：红色
-                } else {
-                  variant = "secondary"; // 其他选项：灰色
-                }
-              } else {
-                variant = isSelected ? "outline" : "default"; // 正常状态下的选中逻辑
-              }
+                  let optionClass = "border-2 transition-all duration-200 ";
+                  let iconElement = null;
 
-              return (
-                <li key={idx} className="p-3 bg-gray-100 rounded">
-                  <Button
-                    variant={variant}
-                    disabled={isTimeUp}
-                    onClick={() => handleOptionClick(idx)}
-                  >
-                    {opt.text}
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-          {showResult && correctAnswers && (
-            <div className="mt-4 text-center text-lg font-semibold">
-              {JSON.stringify(correctAnswers.sort()) ===
-              JSON.stringify(selected.sort()) ? (
-                <span className="text-green-600">✅ Correct!</span>
-              ) : (
-                <span className="text-red-600">❌ Incorrect!</span>
+                  if (isTimeUp) {
+                    if (isCorrect) {
+                      optionClass += "border-green-500 bg-green-50";
+                      iconElement = (
+                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      );
+                    } else if (isSelected) {
+                      optionClass += "border-red-500 bg-red-50";
+                      iconElement = (
+                        <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                      );
+                    } else {
+                      optionClass += "border-gray-200";
+                    }
+                  } else {
+                    optionClass += isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300";
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleOptionClick(idx)}
+                      disabled={isTimeUp}
+                      className={`flex items-center justify-between p-4 rounded-lg ${optionClass} ${
+                        isTimeUp ? "cursor-default" : "cursor-pointer"
+                      }`}
+                    >
+                      <span className="text-lg">{opt.text}</span>
+                      {iconElement}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {showResult && correctAnswers && (
+                <div className="mt-6 p-4 rounded-lg bg-gray-50 border flex items-center justify-center gap-3">
+                  {JSON.stringify(correctAnswers.sort()) ===
+                  JSON.stringify(selected.sort()) ? (
+                    <>
+                      <Award className="h-6 w-6 text-green-500" />
+                      <span className="text-xl font-semibold text-green-600">
+                        Correct Answer!
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-6 w-6 text-red-500" />
+                      <span className="text-xl font-semibold text-red-600">
+                        Incorrect Answer
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {question.type === "multiple" && (
+                <p className="text-sm text-muted-foreground italic">
+                  Select all correct answers that apply
+                </p>
               )}
             </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 space-y-4">
+              <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              <p className="text-lg text-muted-foreground">
+                Loading question...
+              </p>
+            </div>
           )}
-        </div>
-      ) : (
-        <div className="text-gray-500">Loading question...</div>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
