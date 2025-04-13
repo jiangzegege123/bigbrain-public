@@ -90,14 +90,19 @@ const PlayerGame = () => {
 
   useEffect(() => {
     if (remainingTime === 0 && question) {
-      // 时间到了，显示结果
       setShowResult(true);
 
-      // 拉取正确答案
       getCorrectAnswer(playerId!)
         .then(({ answerIds }) => {
-          setCorrectAnswers(answerIds);
-          console.log("✅ Correct answers:", answerIds);
+          // 转换成 index 数组
+          const indexes = answerIds
+            .map((text) =>
+              question.options.findIndex((opt) => opt.text === text)
+            )
+            .filter((i) => i !== -1); // 过滤掉没找到的（以防万一）
+
+          setCorrectAnswers(indexes);
+          console.log("✅ Correct answer indexes:", indexes);
         })
         .catch((err) => {
           console.error("❌ Failed to get correct answers:", err);
