@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { checkSessionStatus, getSessionResults } from "@/api/session";
 import { useAuth } from "@/contexts/AuthContext";
 import type { PlayerResult } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, LineChart } from "@/components/ui/charts";
 
 const AdminSessionResult = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -32,8 +34,9 @@ const AdminSessionResult = () => {
 
     fetchStatus();
   }, [token, sessionId]);
+
   if (status) {
-    return <>111</>;
+    return <div>Session is still active</div>;
   }
   if (error) return <div className="text-red-500">Error: {error}</div>;
   if (!results) return <div>Loading session results...</div>;
@@ -66,34 +69,82 @@ const AdminSessionResult = () => {
     avgTimes[i] = +(totalTime / results.length).toFixed(2);
   }
 
-  return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold">Top 5 Players</h2>
-      <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedPlayers.map((player, idx) => (
-            <tr key={idx} className="border-t">
-              <td className="p-2">{player.name}</td>
-              <td className="p-2">{player.score}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+  // Prepare chart data
+  const labels = Array.from({ length: numQuestions }, (_, i) => `Q${i + 1}`);
 
-      <h2 className="text-2xl font-bold mt-8">Question Stats</h2>
-      <ul className="space-y-2">
-        {correctRates.map((rate, i) => (
-          <li key={i} className="bg-gray-50 p-4 rounded border">
-            <strong>Q{i + 1}</strong>: {rate}% correct, avg time: {avgTimes[i]}s
-          </li>
-        ))}
-      </ul>
+  const correctRatesData = {
+    labels,
+    datasets: [
+      {
+        label: "Correct Answer Rate (%)",
+        data: correctRates,
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const avgTimesData = {
+    labels,
+    datasets: [
+      {
+        label: "Average Response Time (s)",
+        data: avgTimes,
+        backgroundColor: "rgba(255, 159, 64, 0.6)",
+        borderColor: "rgba(255, 159, 64, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  return (
+    <div className="space-y-6 p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Top 5 Players</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="p-2 text-left font-medium">Name</th>
+                  <th className="p-2 text-left font-medium">Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPlayers.map((player, idx) => (
+                  <tr key={idx} className="border-t">
+                    <td className="p-2">{player.name}</td>
+                    <td className="p-2">{player.score}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Correct Answer Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart data={correctRatesData} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Average Response Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart data={avgTimesData} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
