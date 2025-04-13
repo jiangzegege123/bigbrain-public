@@ -15,6 +15,7 @@ const SessionResults = () => {
     const loadResults = async () => {
       try {
         const data = await getSessionResults(token!, sessionId!);
+
         setResult(data);
       } catch (err) {
         setError("Failed to load session results.");

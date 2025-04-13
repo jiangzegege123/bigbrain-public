@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCurrentQuestion } from "@/api/player";
 import { Question } from "@/types";
+import { Button } from "@/components/ui/button";
+import { submitAnswer } from "@/api/player";
 
 const PlayerGame = () => {
   const { playerId } = useParams<{ playerId: string; sessionId: string }>();
   const [pollingStarted, setPollingStarted] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [started, setStarted] = useState(false);
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,6 +59,15 @@ const PlayerGame = () => {
           setQuestion(newQuestion);
           console.log("Current Question:", question);
         }
+
+        const startedAt = new Date(newQuestion.isoTimeLastQuestionStarted);
+        const now = new Date();
+        const elapsed = Math.floor(
+          (now.getTime() - startedAt.getTime()) / 1000
+        );
+        const total = Math.floor(newQuestion.duration);
+        const remaining = Math.max(total - elapsed, 0);
+        setRemainingTime(remaining);
       } catch (err) {
         console.error("Polling question error:", err);
       }
@@ -75,11 +87,27 @@ const PlayerGame = () => {
         </div>
       ) : question ? (
         <div>
+          {remainingTime! > 0 && <p>Remaining Time {remainingTime}</p>}
           <h2 className="text-2xl font-semibold mb-4">{question.question}</h2>
           <ul className="space-y-2">
             {question.options.map((opt, idx) => (
               <li key={idx} className="p-3 bg-gray-100 rounded">
-                {opt.text}
+                <Button
+                  onClick={async () => {
+                    if (remainingTime && remainingTime > 0) {
+                      try {
+                        await submitAnswer(playerId!, idx);
+                        console.log(`Answer ${idx} submitted`);
+                      } catch (err) {
+                        console.error("Failed to submit answer:", err);
+                      }
+                    } else {
+                      console.warn("Time is up, cannot submit");
+                    }
+                  }}
+                >
+                  {opt.text}
+                </Button>
               </li>
             ))}
           </ul>
