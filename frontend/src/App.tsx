@@ -26,7 +26,10 @@ function App() {
         element={<QuestionEdit />}
       />
 
-      <Route path="/session/:sessionId" element={<AdminSessionResult />} />
+      <Route
+        path="/:gameId/session/:sessionId"
+        element={<AdminSessionResult />}
+      />
       <Route path="/play" element={<Play />} />
       <Route path="/play/:sessionId" element={<Play />} />
       <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />

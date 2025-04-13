@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 interface SessionResultModalProps {
   sessionId: string;
   onClose: () => void;
+  activeGameId: string;
 }
 
 const SessionResultModal = ({
   sessionId,
   onClose,
+  activeGameId,
 }: SessionResultModalProps) => {
   const navigate = useNavigate();
 
@@ -19,7 +21,7 @@ const SessionResultModal = ({
         <p>Would you like to view the results?</p>
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => navigate(`/session/${sessionId}`)}
+            onClick={() => navigate(`/${activeGameId}/session/${sessionId}`)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Yes

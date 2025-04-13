@@ -24,6 +24,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const [showResultModal, setShowResultModal] = useState(false);
+  const [activeGameId, setActiveGameId] = useState<number | null>(null);
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -52,6 +53,7 @@ const Dashboard = () => {
       const data = await mutateGameState(token!, gameId, "START");
       console.log(data);
       setSessionId(data.sessionId);
+      setActiveGameId(gameId);
 
       await loadGames(token!, setGames, setError);
       setShowSessionModal(true);
@@ -225,6 +227,7 @@ const Dashboard = () => {
       {showResultModal && sessionId && (
         <SessionResultModal
           sessionId={sessionId}
+          gameId={activeGameId}
           onClose={() => setShowResultModal(false)}
         />
       )}

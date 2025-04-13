@@ -1,47 +1,94 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { checkSessionStatus, getSessionResults } from "@/api/session";
+import {
+  checkSessionStatus,
+  getSessionResults,
+  mutateGameState,
+} from "@/api/session";
 import { useAuth } from "@/contexts/AuthContext";
 import type { PlayerResult } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, LineChart } from "@/components/ui/charts";
 
 const AdminSessionResult = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
+  const { sessionId, gameId } = useParams<{
+    sessionId: string;
+    gameId: string;
+  }>();
   const { token } = useAuth();
 
   const [status, setStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<PlayerResult[] | null>(null);
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const data = await checkSessionStatus(token!, sessionId!);
-        console.log("✅ Session status:", data);
-        setStatus(data.active);
+  const fetchStatus = async () => {
+    try {
+      const data = await checkSessionStatus(token!, sessionId!);
+      console.log("✅ Session status:", data);
+      setStatus(data.active);
 
-        // ✅ 如果 session 已结束，调用 getSessionResults
-        if (data.active === false) {
-          const resultData = await getSessionResults(token!, sessionId!);
-          console.log("🎯 Session result data:", resultData);
-          setResults(resultData);
-        }
-      } catch (err) {
-        if (err instanceof Error) setError(err.message);
+      if (!data.active) {
+        const resultData = await getSessionResults(token!, sessionId!);
+        console.log("🎯 Session result data:", resultData);
+        setResults(resultData);
       }
-    };
+    } catch (err) {
+      if (err instanceof Error) setError(err.message);
+    }
+  };
 
+  useEffect(() => {
     fetchStatus();
   }, [token, sessionId]);
 
   if (status) {
-    return <div>Session is still active</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          Session is still active
+        </h2>
+        <p className="text-gray-500">
+          You can advance to the next question or stop the session.
+        </p>
+
+        <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                await mutateGameState(token!, Number(gameId), "ADVANCE");
+                await fetchStatus(); // 🔄 重新获取状态
+              } catch (err) {
+                console.error("Failed to advance:", err);
+                alert("❌ Failed to advance question.");
+              }
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Advance Question
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                await mutateGameState(token!, Number(gameId), "END");
+                await fetchStatus(); // 🔄 重新获取状态
+              } catch (err) {
+                console.error("Failed to stop:", err);
+                alert("❌ Failed to stop session.");
+              }
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Stop Session
+          </button>
+        </div>
+      </div>
+    );
   }
+
   if (error) return <div className="text-red-500">Error: {error}</div>;
   if (!results) return <div>Loading session results...</div>;
 
-  // Top 5 scores
   const sortedPlayers = [...results]
     .map((player) => ({
       name: player.name,
@@ -50,7 +97,6 @@ const AdminSessionResult = () => {
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 
-  // Question-level stats
   const numQuestions = results[0]?.answers.length || 0;
   const correctRates = Array(numQuestions).fill(0);
   const avgTimes = Array(numQuestions).fill(0);
@@ -69,7 +115,6 @@ const AdminSessionResult = () => {
     avgTimes[i] = +(totalTime / results.length).toFixed(2);
   }
 
-  // Prepare chart data
   const labels = Array.from({ length: numQuestions }, (_, i) => `Q${i + 1}`);
 
   const correctRatesData = {
