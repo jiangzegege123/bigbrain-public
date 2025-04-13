@@ -78,7 +78,12 @@ const GameCard = ({
         </div>
 
         <div className="p-4">
-          <h2 className="text-lg font-semibold mb-2">{game.name}</h2>
+          <h2 className="text-lg font-semibold mb-2 flex">
+            {game.name}{" "}
+            <span className="text-sm font-light ml-auto text-gray-500">
+              Click the box to edit the game
+            </span>
+          </h2>
           <div className="flex items-center gap-4 text-sm text-gray-500">
             <div className="flex items-center gap-1">
               <HelpCircle className="h-4 w-4" />

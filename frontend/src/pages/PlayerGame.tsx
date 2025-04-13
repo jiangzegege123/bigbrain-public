@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   getPlayerStatus,
   getCurrentQuestion,
@@ -21,6 +21,7 @@ const PlayerGame = () => {
   const [correctAnswers, setCorrectAnswers] = useState<number[] | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [sessionOver, setSessionOver] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
@@ -83,6 +84,7 @@ const PlayerGame = () => {
         console.error("Polling question error:", err);
         clearInterval(interval);
         setSessionOver(true);
+        navigate(`${location.pathname}/result`);
       }
     }, 1000);
 
@@ -90,14 +92,14 @@ const PlayerGame = () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [pollingStarted, playerId, question]);
+  }, [pollingStarted, playerId, question, navigate]);
 
   useEffect(() => {
     if (remainingTime === 0 && question) {
       setShowResult(true);
 
       getCorrectAnswer(playerId!)
-        .then(({ answers }) => {
+        .then((answers) => {
           const indexes = answers
             .map((text) =>
               question.options.findIndex((opt) => opt.text === text)
@@ -119,8 +121,10 @@ const PlayerGame = () => {
     if (question.type === "single" || question.type === "judgement") {
       setSelected([idx]);
       try {
-        await submitAnswer(playerId!, [idx]);
-        console.log(`Answer ${idx} submitted`);
+        const sorted = [idx].sort((a, b) => a - b);
+        const texts = sorted.map((i) => question.options[i].text);
+        await submitAnswer(playerId!, texts);
+        console.log("Submitted:", texts);
       } catch (err) {
         console.error("Failed to submit answer:", err);
       }
@@ -130,11 +134,13 @@ const PlayerGame = () => {
           ? prev.filter((i) => i !== idx)
           : [...prev, idx];
 
-        // ⬇️ 提交当前 newSelected
         if (newSelected.length > 0) {
-          submitAnswer(playerId!, newSelected)
+          const sorted = [...newSelected].sort((a, b) => a - b); // 🔧 先排序 index
+          const texts = sorted.map((i) => question.options[i].text); // 🔧 转成 text
+
+          submitAnswer(playerId!, texts)
             .then(() => {
-              console.log("Submitted answers:", newSelected);
+              console.log("Submitted answers:", texts);
             })
             .catch((err) => {
               console.error("Failed to submit answers:", err);

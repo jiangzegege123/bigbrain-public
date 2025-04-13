@@ -11,6 +11,7 @@ import { mutateGameState } from "@/api/session";
 // import SessionResultModal from "@/components/session/SessionResultModal";
 import { GamesHeader } from "@/components/game/GamesHeader";
 import { useNavigate } from "react-router-dom";
+import SessionResultModal from "@/components/session/sessionResultModal";
 
 const Dashboard = () => {
   const { token, email } = useAuth();
@@ -22,7 +23,7 @@ const Dashboard = () => {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const navigate = useNavigate();
 
-  // const [showResultModal, setShowResultModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   // Fetch all games when token changes
   useEffect(() => {
@@ -31,6 +32,13 @@ const Dashboard = () => {
 
   const handleStartSession = async (gameId: number) => {
     setError("");
+    const alreadyActive = games.find((g) => g.active !== null);
+    if (alreadyActive) {
+      setError(
+        `Only one session can be active at a time. "${alreadyActive.name}" is currently running.`
+      );
+      return;
+    }
 
     const selectedGame = games.find((g) => g.id === gameId);
     if (!selectedGame || selectedGame.questions.length === 0) {
@@ -67,7 +75,7 @@ const Dashboard = () => {
         setSessionId(String(activeGame.active));
       }
 
-      // setShowResultModal(true);
+      setShowResultModal(true);
     } catch (err) {
       console.error("Failed to stop session:", err);
       alert(
@@ -214,12 +222,12 @@ const Dashboard = () => {
         />
       )}
 
-      {/* {showResultModal && sessionId && (
+      {showResultModal && sessionId && (
         <SessionResultModal
           sessionId={sessionId}
           onClose={() => setShowResultModal(false)}
         />
-      )} */}
+      )}
     </>
   );
 };

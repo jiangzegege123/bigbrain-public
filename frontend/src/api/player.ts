@@ -39,10 +39,10 @@ export const submitAnswer = async (
   });
 };
 
-export const getCorrectAnswer = async (
-  playerId: string
-): Promise<{ answers: string[] }> => {
-  return await apiFetch(`/play/${playerId}/answer`);
+export const getCorrectAnswer = async (playerId: string): Promise<string[]> => {
+  const data = await apiFetch(`/play/${playerId}/answer`);
+  console.log(data.answerIds);
+  return data.answerIds;
 };
 
 // export const getPlayerResults = async (playerId: string): Promise<any> => {
