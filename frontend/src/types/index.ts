@@ -3,6 +3,7 @@ export interface Question {
   question: string;
   duration: number;
   points: number;
+  isoTimeLastQuestionStarted: string;
   media?: string;
   type: "single" | "multiple" | "judgement";
   options: {
@@ -20,4 +21,16 @@ export interface Game {
   active?: number;
   thumbnail?: string;
   createdAt?: string;
+}
+
+export interface SessionResult {
+  players: {
+    name: string;
+    score: number;
+    answers: {
+      questionId: number;
+      correct: boolean;
+      timeTaken: number;
+    }[];
+  }[];
 }

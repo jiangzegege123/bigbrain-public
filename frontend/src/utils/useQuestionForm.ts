@@ -17,6 +17,16 @@ export const useQuestionForm = (initial: Question) => {
         { text: "False", isCorrect: false },
       ];
     }
+    if (
+      field === "type" &&
+      question.type === "judgement" &&
+      (value === "single" || value === "multiple")
+    ) {
+      updated.options = [
+        { text: "", isCorrect: false },
+        { text: "", isCorrect: false },
+      ];
+    }
 
     setQuestion(updated);
   };
