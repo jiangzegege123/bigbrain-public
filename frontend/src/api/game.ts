@@ -1,6 +1,9 @@
 import { apiFetch } from "@/lib/utils";
 import { Game } from "@/types";
 
+/**
+ * Fetch all games belonging to the authenticated admin user.
+ */
 export const fetchGames = async (token: string) => {
   return await apiFetch("/admin/games", {
     headers: {
@@ -9,7 +12,10 @@ export const fetchGames = async (token: string) => {
   });
 };
 
-// Update the list of games via PUT /admin/games
+/**
+ * Update the list of games via PUT /admin/games.
+ * This overwrites the entire game list with the new array.
+ */
 export const updateGames = async (token: string, games: Game[]) => {
   return await apiFetch("/admin/games", {
     method: "PUT",
@@ -20,7 +26,11 @@ export const updateGames = async (token: string, games: Game[]) => {
   });
 };
 
-// Fetch a single game by ID
+/**
+ * Fetch a single game by its ID.
+ * This is done by first fetching all games, then finding the one matching the ID.
+ * @throws If the game is not found.
+ */
 export const fetchSingleGame = async (
   token: string,
   gameId: string
@@ -33,6 +43,10 @@ export const fetchSingleGame = async (
   return game;
 };
 
+/**
+ * Fetch all games and update local state.
+ * Also handles errors via the provided error setter.
+ */
 export const loadGames = async (
   token: string,
   setGames: (games: Game[]) => void,
@@ -47,6 +61,11 @@ export const loadGames = async (
   }
 };
 
+/**
+ * Create a new game and update local state.
+ * The created game is identified by name and owner after the PUT operation.
+ * Returns the newly created game or null on failure.
+ */
 export const createGame = async (
   token: string,
   email: string,
@@ -73,6 +92,7 @@ export const createGame = async (
     );
 
     if (!realGame) throw new Error("Failed to retrieve created game");
+
     setGames(allGamesAfterUpdate);
     return realGame;
   } catch (err) {

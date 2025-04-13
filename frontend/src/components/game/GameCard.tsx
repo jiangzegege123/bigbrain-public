@@ -20,11 +20,11 @@ const GameCard = ({
   onStopSession,
   onAdvanceGame,
 }: GameCardProps) => {
-  console.log(game);
   const initialPosition = (() => {
     const saved = localStorage.getItem(`position-${game.id}`);
     return saved ? parseInt(saved, 10) : 0;
   })();
+
   const isActive = game.active != null;
   const [quizStarted, setQuizStarted] = useState(initialPosition > 0);
   const [showStartQuizConfirm, setShowStartQuizConfirm] = useState(false);
@@ -41,12 +41,14 @@ const GameCard = ({
     0
   );
 
+  // Handle delete button click (shows confirmation)
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowConfirm(true);
   };
 
+  // Confirm game deletion
   const handleConfirmDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -54,6 +56,7 @@ const GameCard = ({
     setShowConfirm(false);
   };
 
+  // Cancel game deletion
   const handleCancelDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -79,7 +82,7 @@ const GameCard = ({
 
         <div className="p-4">
           <h2 className="text-lg font-semibold mb-2 flex">
-            {game.name}{" "}
+            {game.name}
             <span className="text-sm font-light ml-auto text-gray-500">
               Click the box to edit the game
             </span>
@@ -97,6 +100,7 @@ const GameCard = ({
         </div>
       </Link>
 
+      {/* Delete button or confirmation popup */}
       {!showConfirm ? (
         <button
           onClick={handleDeleteClick}
@@ -126,6 +130,7 @@ const GameCard = ({
 
       <div className="p-2 border-t">
         <div className="flex flex-wrap gap-2">
+          {/* Start/Stop Game Button */}
           <Button
             className={`flex-1 min-w-[120px] text-sm font-medium transition-colors ${
               isActive
@@ -148,6 +153,7 @@ const GameCard = ({
             {isActive ? (hovered ? "Stop Game" : "In Progress") : "Start Game"}
           </Button>
 
+          {/* Advance Question Button */}
           {isActive && (
             <Button
               className="flex-1 min-w-[120px] text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
@@ -159,6 +165,7 @@ const GameCard = ({
             </Button>
           )}
 
+          {/* View Sessions Button */}
           <Button
             variant="outline"
             className="flex-1 min-w-[120px] text-sm font-medium border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
@@ -168,6 +175,7 @@ const GameCard = ({
           </Button>
         </div>
 
+        {/* Copy session link */}
         {isActive && (
           <div className="mt-2 flex items-center justify-center">
             <button
@@ -177,7 +185,6 @@ const GameCard = ({
                 navigator.clipboard.writeText(
                   `${window.location.origin}/play/${game.active}`
                 );
-                // Optional: Add visual feedback
                 const target = e.currentTarget;
                 target.classList.add("text-green-600");
                 target.innerText = "Link copied!";
@@ -205,6 +212,7 @@ const GameCard = ({
           </div>
         )}
 
+        {/* Confirm Start or Advance Quiz */}
         {showStartQuizConfirm && (
           <div className="absolute z-20 top-4 right-4 bg-white border border-gray-300 p-4 rounded shadow">
             <p className="text-sm text-gray-700 mb-2">
@@ -230,7 +238,6 @@ const GameCard = ({
                     `position-${game.id}`,
                     newPosition.toString()
                   );
-
                   setShowStartQuizConfirm(false);
                 }}
               >

@@ -28,8 +28,6 @@ export const submitAnswer = async (
   playerId: string,
   answer: number[]
 ): Promise<void> => {
-  console.log("提交的数据：", JSON.stringify({ answers: answer }));
-
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",
     body: JSON.stringify({ answers: answer }), // ✅ 必须是对象形式

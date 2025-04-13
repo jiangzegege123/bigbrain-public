@@ -1,12 +1,17 @@
 // src/components/session/SessionResultModal.tsx
+
 import { useNavigate } from "react-router-dom";
 
 interface SessionResultModalProps {
-  sessionId: string;
-  onClose: () => void;
-  activeGameId: string;
+  sessionId: string; // ID of the recently stopped session
+  onClose: () => void; // Callback to close the modal
+  activeGameId: string; // ID of the game associated with the session
 }
 
+/**
+ * Modal shown when a session is stopped.
+ * Prompts the user to view the session results or return to the dashboard.
+ */
 const SessionResultModal = ({
   sessionId,
   onClose,
