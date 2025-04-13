@@ -9,8 +9,9 @@ import {
 interface AuthContextType {
   token: string | null;
   isLoggedIn: boolean;
-  login: (newToken: string) => void;
+  login: (newToken: string, email: string) => void;
   logout: () => void;
+  email: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,25 +20,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("token")
   );
+  const [email, setEmail] = useState<string | null>(
+    localStorage.getItem("email")
+  );
 
   useEffect(() => {
-    if (token) {
+    if (token && email) {
       localStorage.setItem("token", token);
+      localStorage.setItem("email", email);
     } else {
       localStorage.removeItem("token");
+      localStorage.removeItem("email");
     }
-  }, [token]);
+  }, [token, email]);
 
-  const login = (newToken: string) => {
+  const login = (newToken: string, email: string) => {
     setToken(newToken);
+    setEmail(email);
   };
 
   const logout = () => {
     setToken(null);
+    setEmail(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, isLoggedIn: !!token, login, logout }}>
+    <AuthContext.Provider
+      value={{ token, email, isLoggedIn: !!token, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
