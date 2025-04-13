@@ -9,10 +9,18 @@ interface GameCreateModalProps {
   onCreate: (name: string) => Promise<void>;
 }
 
+/**
+ * Modal component for creating a new game.
+ * Displays a form to enter a game name, and calls `onCreate` when submitted.
+ */
 const GameCreateModal = ({ open, onClose, onCreate }: GameCreateModalProps) => {
   const [gameName, setGameName] = useState("");
   const [error, setError] = useState("");
 
+  /**
+   * Handles the creation of a new game.
+   * Calls the `onCreate` callback with the provided name.
+   */
   const handleSubmit = async () => {
     try {
       await onCreate(gameName);
@@ -24,11 +32,13 @@ const GameCreateModal = ({ open, onClose, onCreate }: GameCreateModalProps) => {
     }
   };
 
+  // Don't render modal if `open` is false
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg space-y-4 w-[350px] max-w-[90vw]">
+        {/* Modal Header */}
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold">Create New Game</h2>
           <button
@@ -42,6 +52,7 @@ const GameCreateModal = ({ open, onClose, onCreate }: GameCreateModalProps) => {
           </button>
         </div>
 
+        {/* Game Name Input */}
         <div>
           <label htmlFor="game-name" className="text-sm font-medium block mb-2">
             Game Name
@@ -54,6 +65,7 @@ const GameCreateModal = ({ open, onClose, onCreate }: GameCreateModalProps) => {
           />
         </div>
 
+        {/* Error Message */}
         {error && (
           <p className="text-red-500 text-sm flex items-center gap-1">
             <X className="h-4 w-4" />
@@ -61,6 +73,7 @@ const GameCreateModal = ({ open, onClose, onCreate }: GameCreateModalProps) => {
           </p>
         )}
 
+        {/* Action Buttons */}
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={onClose}>
             Cancel

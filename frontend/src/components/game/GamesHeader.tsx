@@ -1,13 +1,18 @@
 // components/game/GamesHeader.tsx
+
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
 interface GamesHeaderProps {
-  title: string;
-  description: string;
-  onAddGame: () => void;
+  title: string; // Main heading for the section
+  description: string; // Subtitle or brief description
+  onAddGame: () => void; // Callback triggered when "Add Game" is clicked
 }
 
+/**
+ * Header section for the Games Dashboard.
+ * Displays the title, description, and a button to add a new game.
+ */
 export const GamesHeader = ({
   title,
   description,
@@ -19,6 +24,7 @@ export const GamesHeader = ({
         <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
         <p className="text-gray-500 mt-1">{description}</p>
       </div>
+
       <Button onClick={onAddGame} className="flex items-center gap-2">
         <PlusCircle className="h-4 w-4" />
         <span>Add Game</span>

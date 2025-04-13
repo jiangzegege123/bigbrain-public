@@ -6,6 +6,7 @@ export interface Question {
   isoTimeLastQuestionStarted: string;
   media?: string;
   type: "single" | "multiple" | "judgement";
+  correctAnswers?: string[];
   options: {
     text: string;
     isCorrect: boolean;
@@ -23,14 +24,27 @@ export interface Game {
   createdAt?: string;
 }
 
-export interface SessionResult {
-  players: {
-    name: string;
-    score: number;
-    answers: {
-      questionId: number;
-      correct: boolean;
-      timeTaken: number;
-    }[];
-  }[];
+export interface AdminSessionResult {
+  active: boolean;
+  answerAvailable: boolean;
+  isoTimeLastQuestionStarted: string | null;
+  players: string[];
+  position: number;
+  questions: Question[];
+}
+
+export interface PlayerAnswer {
+  questionStartedAt: string;
+  answeredAt: string;
+  answers: string[];
+  correct: boolean;
+}
+
+export interface PlayerResult {
+  name: string;
+  answers: PlayerAnswer[];
+}
+
+export interface SessionResultsResponse {
+  results: PlayerResult[];
 }

@@ -1,14 +1,21 @@
 // src/components/session/SessionResultModal.tsx
+
 import { useNavigate } from "react-router-dom";
 
 interface SessionResultModalProps {
-  sessionId: string;
-  onClose: () => void;
+  sessionId: string; // ID of the recently stopped session
+  onClose: () => void; // Callback to close the modal
+  activeGameId: string; // ID of the game associated with the session
 }
 
+/**
+ * Modal shown when a session is stopped.
+ * Prompts the user to view the session results or return to the dashboard.
+ */
 const SessionResultModal = ({
   sessionId,
   onClose,
+  activeGameId,
 }: SessionResultModalProps) => {
   const navigate = useNavigate();
 
@@ -19,7 +26,7 @@ const SessionResultModal = ({
         <p>Would you like to view the results?</p>
         <div className="flex gap-2 mt-4">
           <button
-            onClick={() => navigate(`/session/${sessionId}`)}
+            onClick={() => navigate(`/${activeGameId}/session/${sessionId}`)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Yes

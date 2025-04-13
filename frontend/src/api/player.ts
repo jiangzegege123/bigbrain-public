@@ -26,22 +26,21 @@ export const getCurrentQuestion = async (
 
 export const submitAnswer = async (
   playerId: string,
-  answer: number[] | number
+  answer: number[]
 ): Promise<void> => {
-  const answerIds = Array.isArray(answer) ? answer : [answer]; // 保证是数组
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",
-    body: JSON.stringify({ answerIds }),
+    body: JSON.stringify({ answers: answer }), // ✅ 必须是对象形式
     headers: {
       "Content-Type": "application/json",
     },
   });
 };
 
-export const getCorrectAnswer = async (
-  playerId: string
-): Promise<{ answerIds: number[] }> => {
-  return await apiFetch(`/play/${playerId}/answer`);
+export const getCorrectAnswer = async (playerId: string): Promise<string[]> => {
+  const data = await apiFetch(`/play/${playerId}/answer`);
+  console.log(data.answerIds);
+  return data.answerIds;
 };
 
 // export const getPlayerResults = async (playerId: string): Promise<any> => {

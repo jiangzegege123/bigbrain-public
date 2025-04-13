@@ -34,16 +34,19 @@ const QuestionEdit = () => {
     handleCorrectToggle,
     handleMediaUpload,
   } = useQuestionForm({
+    id: undefined,
     question: "",
     duration: 30,
     points: 100,
     type: "single",
+    isoTimeLastQuestionStarted: "",
+    media: "",
+    correctAnswers: [],
     options: [
       { text: "", isCorrect: false },
       { text: "", isCorrect: false },
     ],
   });
-
   const load = useCallback(async () => {
     try {
       const { games }: { games: Game[] } = await fetchGames(token!);
@@ -103,9 +106,10 @@ const QuestionEdit = () => {
           <Label>Question Type</Label>
           <select
             value={question.type}
-            onChange={(e) =>
-              handleChange("type", e.target.value as Question["type"])
-            }
+            onChange={(e) => {
+              setError("");
+              handleChange("type", e.target.value as Question["type"]);
+            }}
             className="border rounded p-2"
           >
             <option value="single">Single Choice</option>
@@ -118,7 +122,10 @@ const QuestionEdit = () => {
           <Label>Question</Label>
           <Input
             value={question.question}
-            onChange={(e) => handleChange("question", e.target.value)}
+            onChange={(e) => {
+              setError("");
+              handleChange("question", e.target.value);
+            }}
           />
         </div>
 
@@ -127,7 +134,10 @@ const QuestionEdit = () => {
           <Input
             type="number"
             value={question.duration}
-            onChange={(e) => handleChange("duration", Number(e.target.value))}
+            onChange={(e) => {
+              setError("");
+              handleChange("duration", Number(e.target.value));
+            }}
           />
         </div>
 
@@ -136,7 +146,10 @@ const QuestionEdit = () => {
           <Input
             type="number"
             value={question.points}
-            onChange={(e) => handleChange("points", Number(e.target.value))}
+            onChange={(e) => {
+              setError("");
+              handleChange("points", Number(e.target.value));
+            }}
           />
         </div>
 
@@ -149,7 +162,10 @@ const QuestionEdit = () => {
                 ? question.media
                 : question.media || ""
             }
-            onChange={(e) => handleChange("media", e.target.value)}
+            onChange={(e) => {
+              setError("");
+              handleChange("media", e.target.value);
+            }}
           />
           <Label className="mt-1">Or Upload an Image</Label>
           <Input type="file" accept="image/*" onChange={handleMediaUpload} />
@@ -168,7 +184,10 @@ const QuestionEdit = () => {
               <input
                 type="checkbox"
                 checked={opt.isCorrect}
-                onChange={() => handleCorrectToggle(i)}
+                onChange={() => {
+                  setError("");
+                  handleCorrectToggle(i);
+                }}
                 title="Correct answer?"
               />
             </div>
@@ -176,12 +195,13 @@ const QuestionEdit = () => {
           {question.type !== "judgement" && question.options.length < 6 && (
             <Button
               variant="outline"
-              onClick={() =>
+              onClick={() => {
+                setError("");
                 handleChange("options", [
                   ...question.options,
                   { text: "", isCorrect: false },
-                ])
-              }
+                ]);
+              }}
             >
               + Add Option
             </Button>
