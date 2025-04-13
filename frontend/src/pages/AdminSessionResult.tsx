@@ -11,25 +11,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, LineChart } from "@/components/ui/charts";
 
 const AdminSessionResult = () => {
+  // Extract sessionId and gameId from the URL
   const { sessionId, gameId } = useParams<{
     sessionId: string;
     gameId: string;
   }>();
+
   const { token } = useAuth();
 
-  const [status, setStatus] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<PlayerResult[] | null>(null);
+  const [status, setStatus] = useState(false); // Whether session is still active
+  const [error, setError] = useState<string | null>(null); // Any error fetching session
+  const [results, setResults] = useState<PlayerResult[] | null>(null); // Session result data
 
+  // Fetch session status and results if ended
   const fetchStatus = async () => {
     try {
       const data = await checkSessionStatus(token!, sessionId!);
-      console.log("✅ Session status:", data);
       setStatus(data.active);
 
+      // If session has ended, get results
       if (!data.active) {
         const resultData = await getSessionResults(token!, sessionId!);
-        console.log("🎯 Session result data:", resultData);
         setResults(resultData);
       }
     } catch (err) {
@@ -41,6 +43,7 @@ const AdminSessionResult = () => {
     fetchStatus();
   }, [token, sessionId]);
 
+  // UI when session is still active
   if (status) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-8">
@@ -56,9 +59,8 @@ const AdminSessionResult = () => {
             onClick={async () => {
               try {
                 await mutateGameState(token!, Number(gameId), "ADVANCE");
-                await fetchStatus(); // 🔄 重新获取状态
-              } catch (err) {
-                console.error("Failed to advance:", err);
+                await fetchStatus(); // Refresh session state
+              } catch {
                 alert("❌ Failed to advance question.");
               }
             }}
@@ -71,9 +73,8 @@ const AdminSessionResult = () => {
             onClick={async () => {
               try {
                 await mutateGameState(token!, Number(gameId), "END");
-                await fetchStatus(); // 🔄 重新获取状态
-              } catch (err) {
-                console.error("Failed to stop:", err);
+                await fetchStatus(); // Refresh session state
+              } catch {
                 alert("❌ Failed to stop session.");
               }
             }}
@@ -89,6 +90,7 @@ const AdminSessionResult = () => {
   if (error) return <div className="text-red-500">Error: {error}</div>;
   if (!results) return <div>Loading session results...</div>;
 
+  // Prepare top 5 players sorted by number of correct answers
   const sortedPlayers = [...results]
     .map((player) => ({
       name: player.name,
@@ -97,6 +99,7 @@ const AdminSessionResult = () => {
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 
+  // Compute per-question statistics
   const numQuestions = results[0]?.answers.length || 0;
   const correctRates = Array(numQuestions).fill(0);
   const avgTimes = Array(numQuestions).fill(0);
@@ -115,6 +118,7 @@ const AdminSessionResult = () => {
     avgTimes[i] = +(totalTime / results.length).toFixed(2);
   }
 
+  // Chart labels for Q1, Q2, ...
   const labels = Array.from({ length: numQuestions }, (_, i) => `Q${i + 1}`);
 
   const correctRatesData = {
@@ -145,6 +149,7 @@ const AdminSessionResult = () => {
 
   return (
     <div className="space-y-6 p-4">
+      {/* Top 5 Players Table */}
       <Card>
         <CardHeader>
           <CardTitle>Top 5 Players</CardTitle>
@@ -171,6 +176,7 @@ const AdminSessionResult = () => {
         </CardContent>
       </Card>
 
+      {/* Charts: Correct Rate and Average Time */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
