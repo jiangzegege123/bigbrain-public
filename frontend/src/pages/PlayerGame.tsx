@@ -6,6 +6,7 @@ import { getCurrentQuestion } from "@/api/player";
 import { Question } from "@/types";
 import { Button } from "@/components/ui/button";
 import { submitAnswer } from "@/api/player";
+import { getCorrectAnswer } from "@/api/player";
 
 const PlayerGame = () => {
   const { playerId } = useParams<{ playerId: string; sessionId: string }>();
@@ -14,6 +15,8 @@ const PlayerGame = () => {
   const [started, setStarted] = useState(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
+  const [correctAnswers, setCorrectAnswers] = useState<number[] | null>(null);
+  const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -80,6 +83,23 @@ const PlayerGame = () => {
     };
   }, [pollingStarted, playerId, question]);
 
+  useEffect(() => {
+    if (remainingTime === 0 && question) {
+      // 时间到了，显示结果
+      setShowResult(true);
+
+      // 拉取正确答案
+      getCorrectAnswer(playerId!)
+        .then(({ answerIds }) => {
+          setCorrectAnswers(answerIds);
+          console.log("✅ Correct answers:", answerIds);
+        })
+        .catch((err) => {
+          console.error("❌ Failed to get correct answers:", err);
+        });
+    }
+  }, [remainingTime, question, playerId]);
+
   const handleOptionClick = async (idx: number) => {
     if (!question || remainingTime! <= 0) return;
 
@@ -98,13 +118,17 @@ const PlayerGame = () => {
           : [...prev, idx];
 
         // ⬇️ 提交当前 newSelected
-        submitAnswer(playerId!, newSelected)
-          .then(() => {
-            console.log("Submitted answers:", newSelected);
-          })
-          .catch((err) => {
-            console.error("Failed to submit answers:", err);
-          });
+        if (newSelected.length > 0) {
+          submitAnswer(playerId!, newSelected)
+            .then(() => {
+              console.log("Submitted answers:", newSelected);
+            })
+            .catch((err) => {
+              console.error("Failed to submit answers:", err);
+            });
+        } else {
+          console.log("No selection, not submitting.");
+        }
 
         return newSelected;
       });
@@ -124,10 +148,29 @@ const PlayerGame = () => {
           <ul className="space-y-2">
             {question.options.map((opt, idx) => {
               const isSelected = selected.includes(idx);
+              const isCorrect = correctAnswers?.includes(idx);
+              const isTimeUp = remainingTime === 0;
+
+              let variant: "default" | "outline" | "secondary" | "destructive" =
+                "default";
+
+              if (isTimeUp) {
+                if (isCorrect) {
+                  variant = "outline"; // ✅ 正确答案：白底黑字
+                } else if (isSelected) {
+                  variant = "destructive"; // ❌ 你选了但错了：红色
+                } else {
+                  variant = "secondary"; // 其他选项：灰色
+                }
+              } else {
+                variant = isSelected ? "outline" : "default"; // 正常状态下的选中逻辑
+              }
+
               return (
                 <li key={idx} className="p-3 bg-gray-100 rounded">
                   <Button
-                    variant={isSelected ? "secondary" : "default"}
+                    variant={variant}
+                    disabled={isTimeUp}
                     onClick={() => handleOptionClick(idx)}
                   >
                     {opt.text}
@@ -136,6 +179,16 @@ const PlayerGame = () => {
               );
             })}
           </ul>
+          {showResult && correctAnswers && (
+            <div className="mt-4 text-center text-lg font-semibold">
+              {JSON.stringify(correctAnswers.sort()) ===
+              JSON.stringify(selected.sort()) ? (
+                <span className="text-green-600">✅ Correct!</span>
+              ) : (
+                <span className="text-red-600">❌ Incorrect!</span>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-gray-500">Loading question...</div>
