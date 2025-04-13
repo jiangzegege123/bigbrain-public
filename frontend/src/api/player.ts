@@ -41,7 +41,7 @@ export const submitAnswer = async (
 
 export const getCorrectAnswer = async (
   playerId: string
-): Promise<{ answerIds: number[] }> => {
+): Promise<{ answers: string[] }> => {
   return await apiFetch(`/play/${playerId}/answer`);
 };
 

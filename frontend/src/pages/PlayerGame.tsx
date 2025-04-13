@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -22,6 +20,7 @@ const PlayerGame = () => {
   const [selected, setSelected] = useState<number[]>([]);
   const [correctAnswers, setCorrectAnswers] = useState<number[] | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [sessionOver, setSessionOver] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,6 +45,8 @@ const PlayerGame = () => {
         }
       } catch (err) {
         console.error("Error during polling:", err);
+        clearInterval(interval);
+        setSessionOver(true);
       }
     }, 1000);
 
@@ -57,6 +58,7 @@ const PlayerGame = () => {
 
   useEffect(() => {
     if (!pollingStarted) return;
+
     setStarted(true);
     let isMounted = true;
     const interval = setInterval(async () => {
@@ -79,6 +81,8 @@ const PlayerGame = () => {
         setRemainingTime(remaining);
       } catch (err) {
         console.error("Polling question error:", err);
+        clearInterval(interval);
+        setSessionOver(true);
       }
     }, 1000);
 
@@ -93,13 +97,12 @@ const PlayerGame = () => {
       setShowResult(true);
 
       getCorrectAnswer(playerId!)
-        .then(({ answerIds }) => {
-          // 转换成 index 数组
-          const indexes = answerIds
+        .then(({ answers }) => {
+          const indexes = answers
             .map((text) =>
               question.options.findIndex((opt) => opt.text === text)
             )
-            .filter((i) => i !== -1); // 过滤掉没找到的（以防万一）
+            .filter((i) => i !== -1);
 
           setCorrectAnswers(indexes);
           console.log("✅ Correct answer indexes:", indexes);
@@ -163,6 +166,22 @@ const PlayerGame = () => {
         return question.type;
     }
   };
+
+  if (sessionOver) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center space-y-4">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h2 className="text-2xl font-bold text-red-600">
+            This session does not exist or has already ended.
+          </h2>
+          <p className="text-muted-foreground">
+            Please check the link or ask the host to restart the game.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">
