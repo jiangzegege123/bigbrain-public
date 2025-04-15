@@ -122,7 +122,7 @@ const PlayerGame = () => {
       setSelected([idx]);
       try {
         const sorted = [idx].sort((a, b) => a - b);
-        const texts = sorted.map((i) => question.options[i].text);
+        const texts = sorted.map((i) => Number(question.options[i].text));
         await submitAnswer(playerId!, texts);
         console.log("Submitted:", texts);
       } catch (err) {
@@ -135,8 +135,8 @@ const PlayerGame = () => {
           : [...prev, idx];
 
         if (newSelected.length > 0) {
-          const sorted = [...newSelected].sort((a, b) => a - b); // 🔧 先排序 index
-          const texts = sorted.map((i) => question.options[i].text); // 🔧 转成 text
+          const sorted = [...newSelected].sort((a, b) => a - b);
+          const texts = sorted.map((i) => Number(question.options[i].text));
 
           submitAnswer(playerId!, texts)
             .then(() => {
