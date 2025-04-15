@@ -32,7 +32,7 @@ export default tseslint.config(
         },
       ],
       "react/jsx-one-expression-per-line": "off",
-      indent: ["error", 2],
+      indent: "off",
       "react/prop-types": "off",
     },
   }
