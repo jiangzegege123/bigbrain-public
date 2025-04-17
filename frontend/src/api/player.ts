@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/utils";
-import { Question } from "@/types";
+import { Question, PlayerResult } from "@/types";
 
 export const joinSession = async (
   sessionId: string,
@@ -39,10 +39,11 @@ export const submitAnswer = async (
 
 export const getCorrectAnswer = async (playerId: string): Promise<string[]> => {
   const data = await apiFetch(`/play/${playerId}/answer`);
-  console.log(data.answerIds);
-  return data.answerIds;
+  return data.answers;
 };
 
-// export const getPlayerResults = async (playerId: string): Promise<any> => {
-//   return await apiFetch(`/play/${playerId}/results`);
-// };
+export const getPlayerResults = async (
+  playerId: string
+): Promise<PlayerResult> => {
+  return await apiFetch(`/play/${playerId}/results`);
+};

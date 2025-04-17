@@ -115,8 +115,11 @@ const PlayerGame = () => {
     if (remainingTime === 0 && question) {
       setShowResult(true);
 
-      getCorrectAnswer(playerId!)
-        .then((answers) => {
+      // Create a timer to check for answers after the time is up
+      const checkForAnswers = async () => {
+        try {
+          const answers = await getCorrectAnswer(playerId!);
+
           // Find the indexes of correct answers in the options array
           const indexes = answers
             .map((text) =>
@@ -126,10 +129,23 @@ const PlayerGame = () => {
 
           setCorrectAnswers(indexes);
           console.log("✅ Correct answer indexes:", indexes);
-        })
-        .catch((err) => {
-          console.error("❌ Failed to get correct answers:", err);
-        });
+        } catch (err) {
+          // If answers aren't available yet, just leave correctAnswers as null
+          // The UI will show a waiting state
+          console.log("Answers not available yet, will be shown when ready");
+        }
+      };
+
+      // Initial check
+      checkForAnswers();
+
+      // Set up an interval to periodically check if answers are available
+      const answersInterval = setInterval(checkForAnswers, 2000);
+
+      // Clean up the interval when component unmounts or question changes
+      return () => {
+        clearInterval(answersInterval);
+      };
     }
   }, [remainingTime, question, playerId]);
 
@@ -139,7 +155,6 @@ const PlayerGame = () => {
     if (question.type === "single" || question.type === "judgement") {
       setSelected([idx]);
       try {
-        // const sorted = [idx].sort((a, b) => a - b);
         // Send the actual text values for all question types
         const answers = [question.options[idx].text];
         await submitAnswer(playerId!, answers);
@@ -292,10 +307,24 @@ const PlayerGame = () => {
                 })}
               </div>
 
-              {showResult && correctAnswers && (
+              {showResult && (
                 <div className="mt-6 p-4 rounded-lg bg-gray-50 border flex items-center justify-center gap-3">
-                  {JSON.stringify(correctAnswers.sort()) ===
-                  JSON.stringify(selected.sort()) ? (
+                  {correctAnswers === null ? (
+                    <>
+                      <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                      <span className="text-xl font-semibold text-primary">
+                        Checking answer...
+                      </span>
+                    </>
+                  ) : correctAnswers.length === 0 ? (
+                    <>
+                      <Clock className="h-6 w-6 text-amber-500" />
+                      <span className="text-xl font-semibold text-amber-600">
+                        Waiting for results...
+                      </span>
+                    </>
+                  ) : JSON.stringify(correctAnswers.sort()) ===
+                    JSON.stringify(selected.sort()) ? (
                     <>
                       <Award className="h-6 w-6 text-green-500" />
                       <span className="text-xl font-semibold text-green-600">
