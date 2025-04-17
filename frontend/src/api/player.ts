@@ -26,7 +26,7 @@ export const getCurrentQuestion = async (
 
 export const submitAnswer = async (
   playerId: string,
-  answer: number[]
+  answer: string[]
 ): Promise<void> => {
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",

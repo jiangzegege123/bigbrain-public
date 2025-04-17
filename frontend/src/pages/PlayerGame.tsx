@@ -117,6 +117,7 @@ const PlayerGame = () => {
 
       getCorrectAnswer(playerId!)
         .then((answers) => {
+          // Find the indexes of correct answers in the options array
           const indexes = answers
             .map((text) =>
               question.options.findIndex((opt) => opt.text === text)
@@ -139,9 +140,10 @@ const PlayerGame = () => {
       setSelected([idx]);
       try {
         const sorted = [idx].sort((a, b) => a - b);
-        const texts = sorted.map((i) => Number(question.options[i].text));
-        await submitAnswer(playerId!, texts);
-        console.log("Submitted:", texts);
+        // Send the actual text values for all question types
+        const answers = [question.options[idx].text];
+        await submitAnswer(playerId!, answers);
+        console.log("Submitted answer:", answers);
       } catch (err) {
         console.error("Failed to submit answer:", err);
       }
@@ -153,7 +155,8 @@ const PlayerGame = () => {
 
         if (newSelected.length > 0) {
           const sorted = [...newSelected].sort((a, b) => a - b);
-          const texts = sorted.map((i) => Number(question.options[i].text));
+          // Send actual option text values instead of trying to convert to numbers
+          const texts = sorted.map((i) => question.options[i].text);
 
           submitAnswer(playerId!, texts)
             .then(() => {
