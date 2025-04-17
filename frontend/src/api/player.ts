@@ -30,7 +30,7 @@ export const submitAnswer = async (
 ): Promise<void> => {
   await apiFetch(`/play/${playerId}/answer`, {
     method: "PUT",
-    body: JSON.stringify({ answers: answer }), // ✅ 必须是对象形式
+    body: JSON.stringify({ answers: answer }),
     headers: {
       "Content-Type": "application/json",
     },

@@ -18,6 +18,7 @@ const SessionResultModal = ({
   activeGameId,
 }: SessionResultModalProps) => {
   const navigate = useNavigate();
+  console.log(activeGameId);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
