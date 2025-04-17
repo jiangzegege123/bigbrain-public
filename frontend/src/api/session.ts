@@ -1,5 +1,3 @@
-// src/api/session.ts
-
 import { apiFetch } from "@/lib/utils";
 import type { AdminSessionResult } from "@/types";
 import type { SessionResultsResponse } from "@/types";

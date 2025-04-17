@@ -21,6 +21,9 @@ const PlayerGame = () => {
   const [correctAnswers, setCorrectAnswers] = useState<number[] | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [sessionOver, setSessionOver] = useState(false);
+  const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(
+    null
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +43,9 @@ const PlayerGame = () => {
 
           const question = await getCurrentQuestion(playerId!);
           setQuestion(question);
+          if (question.id !== undefined) {
+            setCurrentQuestionId(question.id);
+          }
           if (isMounted) {
             console.log("Current Question:", question);
           }
@@ -67,9 +73,20 @@ const PlayerGame = () => {
         const newQuestion = await getCurrentQuestion(playerId!);
         if (!isMounted) return;
 
+        // Check if the question has changed
         if (JSON.stringify(newQuestion) !== JSON.stringify(question)) {
+          // If we have a new question ID, reset the states related to answers and results
+          if (newQuestion.id !== currentQuestionId) {
+            setSelected([]);
+            setCorrectAnswers(null);
+            setShowResult(false);
+            if (newQuestion.id !== undefined) {
+              setCurrentQuestionId(newQuestion.id);
+            }
+          }
+
           setQuestion(newQuestion);
-          console.log("Current Question:", question);
+          console.log("Current Question:", newQuestion);
         }
 
         const startedAt = new Date(newQuestion.isoTimeLastQuestionStarted);
@@ -92,7 +109,7 @@ const PlayerGame = () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [pollingStarted, playerId, question, navigate]);
+  }, [pollingStarted, playerId, question, navigate, currentQuestionId]);
 
   useEffect(() => {
     if (remainingTime === 0 && question) {
@@ -236,7 +253,7 @@ const PlayerGame = () => {
                   let optionClass = "border-2 transition-all duration-200 ";
                   let iconElement = null;
 
-                  if (isTimeUp) {
+                  if (isTimeUp && correctAnswers) {
                     if (isCorrect) {
                       optionClass += "border-green-500 bg-green-50";
                       iconElement = (
