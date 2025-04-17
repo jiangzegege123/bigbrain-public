@@ -27,6 +27,13 @@ const Dashboard = () => {
     loadGames(token!, setGames, setError);
   }, [token]);
 
+  useEffect(() => {
+    const activeGame = games.find((g) => g.active !== null);
+    if (activeGame) {
+      setActiveGameId(String(activeGame.id));
+    }
+  }, [games]);
+
   // Start a game session
   const handleStartSession = async (gameId: number) => {
     setError("");
