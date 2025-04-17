@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   checkSessionStatus,
@@ -24,25 +24,44 @@ const AdminSessionResult = () => {
   const [results, setResults] = useState<PlayerResult[] | null>(null); // Session result data
 
   // Fetch session status and results if ended
-  const fetchStatus = async () => {
+  // const fetchStatus = async () => {
+  //   try {
+  //     const data = await checkSessionStatus(token!, sessionId!);
+  //     setStatus(data.active);
+
+  //     // If session has ended, get results
+  //     if (!data.active) {
+  //       const resultData = await getSessionResults(token!, sessionId!);
+  //       console.log("resultData", resultData);
+  //       setResults(resultData);
+  //     }
+  //   } catch (err) {
+  //     if (err instanceof Error) setError(err.message);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchStatus();
+  // }, [token, sessionId]);
+
+  const fetchStatus = useCallback(async () => {
     try {
       const data = await checkSessionStatus(token!, sessionId!);
       setStatus(data.active);
 
-      // If session has ended, get results
       if (!data.active) {
         const resultData = await getSessionResults(token!, sessionId!);
-        console.log("resultData", resultData);
+        console.log("result", resultData);
         setResults(resultData);
       }
     } catch (err) {
       if (err instanceof Error) setError(err.message);
     }
-  };
+  }, [token, sessionId]);
 
   useEffect(() => {
     fetchStatus();
-  }, [token, sessionId]);
+  }, [fetchStatus]);
 
   // UI when session is still active
   if (status) {

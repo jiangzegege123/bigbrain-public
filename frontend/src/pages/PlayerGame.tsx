@@ -139,7 +139,7 @@ const PlayerGame = () => {
     if (question.type === "single" || question.type === "judgement") {
       setSelected([idx]);
       try {
-        const sorted = [idx].sort((a, b) => a - b);
+        // const sorted = [idx].sort((a, b) => a - b);
         // Send the actual text values for all question types
         const answers = [question.options[idx].text];
         await submitAnswer(playerId!, answers);
