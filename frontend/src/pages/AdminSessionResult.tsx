@@ -32,7 +32,8 @@ const AdminSessionResult = () => {
       // If session has ended, get results
       if (!data.active) {
         const resultData = await getSessionResults(token!, sessionId!);
-        setResults(resultData.results);
+        console.log("resultData", resultData);
+        setResults(resultData);
       }
     } catch (err) {
       if (err instanceof Error) setError(err.message);

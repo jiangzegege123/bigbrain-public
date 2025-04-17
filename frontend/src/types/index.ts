@@ -45,6 +45,3 @@ export interface PlayerResult {
   answers: PlayerAnswer[];
 }
 
-export interface SessionResultsResponse {
-  results: PlayerResult[];
-}

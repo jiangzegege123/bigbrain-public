@@ -1,6 +1,5 @@
 import { apiFetch } from "@/lib/utils";
-import type { AdminSessionResult } from "@/types";
-import type { SessionResultsResponse } from "@/types";
+import type { AdminSessionResult, PlayerResult } from "@/types";
 
 /**
  * Change the state of a game session.
@@ -35,7 +34,7 @@ export const mutateGameState = async (
 export const getSessionResults = async (
   token: string,
   sessionId: string
-): Promise<SessionResultsResponse> => {
+): Promise<PlayerResult[]> => {
   const response = await apiFetch(`/admin/session/${sessionId}/results`, {
     method: "GET",
     headers: {

@@ -72,6 +72,8 @@ const Dashboard = () => {
         setSessionId(String(activeGame.active));
       }
 
+      // Set the activeGameId to the current game's ID
+      setActiveGameId(String(gameId));
       setShowResultModal(true);
     } catch (err) {
       alert(
