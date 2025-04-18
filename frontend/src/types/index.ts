@@ -20,6 +20,7 @@ export interface Game {
   questions: Question[];
 
   active?: number;
+  oldSessions?: number[];
   thumbnail?: string;
   createdAt?: string;
 }
@@ -44,4 +45,3 @@ export interface PlayerResult {
   name: string;
   answers: PlayerAnswer[];
 }
-

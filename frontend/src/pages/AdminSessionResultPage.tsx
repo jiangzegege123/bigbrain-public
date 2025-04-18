@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSessionData } from "@/hooks/useSessionData";
 import {
@@ -16,6 +16,7 @@ const AdminSessionResultPage = () => {
     sessionId: string;
     gameId: string;
   }>();
+  const navigate = useNavigate();
 
   const { token } = useAuth();
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
@@ -52,10 +53,18 @@ const AdminSessionResultPage = () => {
   };
 
   // Loading state
-  if (isLoading) return <div>Loading session results...</div>;
+  if (isLoading) return (
+    <div className="p-4">
+      <div>Loading session results...</div>
+    </div>
+  );
 
   // Error state
-  if (error) return <div className="text-red-500">Error: {error}</div>;
+  if (error) return (
+    <div className="p-4">
+      <div className="text-red-500">Error: {error}</div>
+    </div>
+  );
 
   // UI when session is still active
   if (status) {
@@ -70,7 +79,11 @@ const AdminSessionResultPage = () => {
 
   // If no results yet, show loading
   if (!sessionResults || sessionResults.length === 0) {
-    return <div>Loading session results...</div>;
+    return (
+      <div className="p-4">
+        <div>Loading session results...</div>
+      </div>
+    );
   }
 
   // Prepare top 5 players sorted by total points scored
@@ -91,6 +104,17 @@ const AdminSessionResultPage = () => {
 
   return (
     <div className="space-y-6 p-4">
+      {/* Navigation Button */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Session Results</h1>
+        <button
+          onClick={() => navigate(`/game/${gameId}/sessions`)}
+          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+        >
+          Back to Sessions
+        </button>
+      </div>
+
       {/* Top 5 Players Table */}
       <TopPlayersTable players={sortedPlayers} title="Top 5 Players" />
 
