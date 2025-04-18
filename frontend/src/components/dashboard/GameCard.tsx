@@ -175,4 +175,86 @@ const GameCard = ({
           </Button>
         </div>
 
+        {/* Copy session link */}
+        {isActive && (
+          <div className="mt-2 flex items-center justify-center">
+            <button
+              className="group flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/play/${game.active}`
+                );
+                const target = e.currentTarget;
+                target.classList.add("text-green-600");
+                target.innerText = "Link copied!";
+                setTimeout(() => {
+                  target.classList.remove("text-green-600");
+                  target.innerText = "Copy join link";
+                }, 2000);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy join link
+            </button>
+          </div>
+        )}
 
+        {/* Confirm Start or Advance Quiz */}
+        {showStartQuizConfirm && (
+          <div className="absolute z-20 top-4 right-4 bg-white border border-gray-300 p-4 rounded shadow">
+            <p className="text-sm text-gray-700 mb-2">
+              {!quizStarted
+                ? "Are you sure you want to start the quiz?"
+                : "Do you want to move to the next question?"}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  if (position >= game.questions.length) {
+                    alert("There are no more questions.");
+                    setShowStartQuizConfirm(false);
+                    return;
+                  }
+                  onAdvanceGame(game.id!);
+                  setQuizStarted(true);
+                  const newPosition = position + 1;
+
+                  setPosition(newPosition);
+                  localStorage.setItem(
+                    `position-${game.id}`,
+                    newPosition.toString()
+                  );
+                  setShowStartQuizConfirm(false);
+                }}
+              >
+                {quizStarted ? "Yes, Next" : "Yes, Start"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowStartQuizConfirm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default GameCard;
