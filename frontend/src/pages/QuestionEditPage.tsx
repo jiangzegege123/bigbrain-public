@@ -7,9 +7,8 @@ import { fetchGames } from "@/api/game";
 import type { Game, Question } from "@/types/index";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/NavBar";
-import { validateQuestion } from "@/utils/validateQuestion";
-import { saveQuestionToGame } from "@/utils/saveQuestionToGame";
-import { useQuestionForm } from "@/utils/useQuestionForm";
+import { validateQuestion, saveQuestionToGame } from "@/lib/utils";
+import { useQuestionForm } from "@/hooks/useQuestionForm";
 import { Trash2, Check, Plus } from "lucide-react";
 
 const QuestionEditPage = () => {
