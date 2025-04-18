@@ -169,3 +169,69 @@ const DashboardPage = () => {
           )}
         </div>
       </div>
+
+      {/* Modal to show session ID and redirect link */}
+      {showSessionModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Session Started</h2>
+            <p>Your session ID:</p>
+            <p>{sessionId}</p>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `http://localhost:3000/play/${sessionId}`
+                  )
+                }
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Copy Link
+              </button>
+              <button
+                onClick={() => {
+                  setShowSessionModal(false);
+                  navigate(`/play/${sessionId}`);
+                }}
+                className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
+              >
+                Go to Play Page
+              </button>
+            </div>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setShowSessionModal(false)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for creating a new game */}
+      {showModal && (
+        <GameCreateModal
+          open={showModal}
+          onClose={() => {
+            setShowModal(false);
+            setError("");
+          }}
+          onCreate={handleCreateGame}
+        />
+      )}
+
+      {/* Modal to ask if admin wants to view session result */}
+      {showResultModal && sessionId && (
+        <SessionResultModal
+          sessionId={sessionId}
+          activeGameId={activeGameId}
+          onClose={() => setShowResultModal(false)}
+        />
+      )}
+    </>
+  );
+};
+
+export default DashboardPage;
