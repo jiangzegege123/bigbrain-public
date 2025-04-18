@@ -4,7 +4,7 @@ import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import GameEdit from "./pages/GameEdit";
 import QuestionEdit from "@/pages/QuestionEdit";
-import SessionResults from "./pages/SessionResults";
+import PlayerSessionResult from "./pages/PlayerSessionResult";
 import Play from "./pages/Play";
 import PlayerGame from "./pages/PlayerGame";
 import GameSessions from "./pages/GameSessions";
@@ -35,7 +35,7 @@ function App() {
       <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />
       <Route
         path="/play/:sessionId/:playerId/Result"
-        element={<SessionResults />}
+        element={<PlayerSessionResult />}
       />
 
       <Route path="/" element={<Navigate to="/login" />} />
