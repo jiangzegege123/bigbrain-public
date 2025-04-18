@@ -1,7 +1,7 @@
 import { Question } from "@/types";
-import QuestionTimer from "./QuestionTimer";
-import OptionsList from "./OptionsList";
-import ResultDisplay from "./ResultDisplay";
+import QuestionTimer from "@/components/game/QuestionTimer";
+import OptionsList from "@/components/game/OptionsList";
+import ResultDisplay from "@/components/game/ResultDisplay";
 
 interface QuestionViewProps {
   question: Question;

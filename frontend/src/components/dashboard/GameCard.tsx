@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Clock, HelpCircle, Gamepad2, X } from "lucide-react";
 import type { Game, Question } from "@/types/index";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 interface GameCardProps {
   game: Game;

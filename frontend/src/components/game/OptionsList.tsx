@@ -1,5 +1,5 @@
 import { Question } from "@/types";
-import OptionButton from "./OptionButton";
+import OptionButton from "@/components/game/OptionButton";
 
 interface OptionsListProps {
   question: Question;
