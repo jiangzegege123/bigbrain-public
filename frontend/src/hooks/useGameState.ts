@@ -163,5 +163,83 @@ export function useGameState(playerId: string) {
     }
   }, [remainingTime, question, playerId]);
 
-  
+  const handleOptionClick = async (idx: number) => {
+    if (!question || remainingTime! <= 0) return;
+
+    if (question.type === "single" || question.type === "judgement") {
+      setSelected([idx]);
+      try {
+        // Send the actual text values for all question types
+        const answers = [question.options[idx].text];
+        await submitAnswer(playerId, answers);
+        console.log("Submitted answer:", answers);
+      } catch (err) {
+        console.error("Failed to submit answer:", err);
+      }
+    } else if (question.type === "multiple") {
+      setSelected((prev) => {
+        const newSelected = prev.includes(idx)
+          ? prev.filter((i) => i !== idx)
+          : [...prev, idx];
+
+        if (newSelected.length > 0) {
+          const sorted = [...newSelected].sort((a, b) => a - b);
+          // Send actual option text values instead of trying to convert to numbers
+          const texts = sorted.map((i) => question.options[i].text);
+
+          submitAnswer(playerId, texts)
+            .then(() => {
+              console.log("Submitted answers:", texts);
+            })
+            .catch((err) => {
+              console.error("Failed to submit answers:", err);
+            });
+        } else {
+          console.log("No selection, not submitting.");
+        }
+
+        return newSelected;
+      });
+    }
+  };
+
+  const getProgressValue = () => {
+    if (!remainingTime || !question) return 0;
+    return (remainingTime / question.duration) * 100;
+  };
+
+  const getQuestionTypeLabel = () => {
+    if (!question) return "";
+    switch (question.type) {
+      case "single":
+        return "Single Choice";
+      case "multiple":
+        return "Multiple Choice";
+      case "judgement":
+        return "True/False";
+      default:
+        return question.type;
+    }
+  };
+
+  return {
+    state: {
+      playerId,
+      question,
+      started,
+      remainingTime,
+      selected,
+      correctAnswers,
+      showResult,
+      sessionOver,
+      isLoading,
+    },
+    actions: {
+      handleOptionClick,
+    },
+    utils: {
+      getProgressValue,
+      getQuestionTypeLabel,
+    },
+  };
 }
