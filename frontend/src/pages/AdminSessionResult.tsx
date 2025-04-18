@@ -22,32 +22,19 @@ const AdminSessionResult = () => {
   const [status, setStatus] = useState(false); // Whether session is still active
   const [error, setError] = useState<string | null>(null); // Any error fetching session
   const [results, setResults] = useState<PlayerResult[] | null>(null); // Session result data
-
-  // Fetch session status and results if ended
-  // const fetchStatus = async () => {
-  //   try {
-  //     const data = await checkSessionStatus(token!, sessionId!);
-  //     setStatus(data.active);
-
-  //     // If session has ended, get results
-  //     if (!data.active) {
-  //       const resultData = await getSessionResults(token!, sessionId!);
-  //       console.log("resultData", resultData);
-  //       setResults(resultData);
-  //     }
-  //   } catch (err) {
-  //     if (err instanceof Error) setError(err.message);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchStatus();
-  // }, [token, sessionId]);
+  const [questionPoints, setQuestionPoints] = useState<number[]>([]);
 
   const fetchStatus = useCallback(async () => {
     try {
       const data = await checkSessionStatus(token!, sessionId!);
+      console.log("session status", data);
       setStatus(data.active);
+
+      // Extract points for each question from session data
+      if (data.questions && Array.isArray(data.questions)) {
+        const points = data.questions.map((q) => q.points || 0);
+        setQuestionPoints(points);
+      }
 
       if (!data.active) {
         const resultData = await getSessionResults(token!, sessionId!);
@@ -110,11 +97,15 @@ const AdminSessionResult = () => {
   if (error) return <div className="text-red-500">Error: {error}</div>;
   if (!results) return <div>Loading session results...</div>;
 
-  // Prepare top 5 players sorted by number of correct answers
+  // Prepare top 5 players sorted by total points scored
   const sortedPlayers = [...results]
     .map((player) => ({
       name: player.name,
-      score: player.answers.filter((a) => a.correct).length,
+      score: player.answers.reduce((total, answer, index) => {
+        // Add points for this question if the answer is correct
+        return total + (answer.correct ? questionPoints[index] || 0 : 0);
+      }, 0),
+      correctCount: player.answers.filter((a) => a.correct).length,
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
@@ -181,6 +172,7 @@ const AdminSessionResult = () => {
                 <tr>
                   <th className="p-2 text-left font-medium">Name</th>
                   <th className="p-2 text-left font-medium">Score</th>
+                  <th className="p-2 text-left font-medium">Correct Answers</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,6 +180,7 @@ const AdminSessionResult = () => {
                   <tr key={idx} className="border-t">
                     <td className="p-2">{player.name}</td>
                     <td className="p-2">{player.score}</td>
+                    <td className="p-2">{player.correctCount}</td>
                   </tr>
                 ))}
               </tbody>
