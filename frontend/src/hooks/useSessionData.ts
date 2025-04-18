@@ -13,21 +13,31 @@ export interface Answer extends PlayerAnswer {
 }
 
 export interface PlayerScore {
-  name: string;
-  score: number;
-  correctCount: number;
+  name: string; // Player's display name
+  score: number; // Total score achieved by the player
+  correctCount: number; // Number of questions answered correctly
 }
 
 export interface SessionData {
-  status: boolean;
-  error: string | null;
-  questionPoints: number[];
-  questionTexts: string[];
-  isLoading: boolean;
+  status: boolean; // Whether the session is active
+  error: string | null; // Error message if any
+  questionPoints: number[]; // Points awarded for each question
+  questionTexts: string[]; // Text content of each question
+  isLoading: boolean; // Whether data is currently being loaded
 }
 
 /**
- * Hook to fetch and manage session data
+ * Custom hook for fetching and managing session data
+ *
+ * This hook provides functionality for:
+ * - Fetching session status and results
+ * - Fetching individual player results
+ * - Calculating player scores and rankings
+ * - Generating statistics for each question
+ *
+ * @param sessionId - The ID of the session to fetch data for
+ * @param token - Authentication token for API requests
+ * @returns An object containing session data and utility functions
  */
 export const useSessionData = (
   sessionId: string | undefined,
@@ -41,6 +51,12 @@ export const useSessionData = (
   const [isLoading, setIsLoading] = useState(true);
   const [sessionResults, setSessionResults] = useState<PlayerResult[]>([]);
 
+  /**
+   * Fetches the current status of a session
+   * Extracts question points, texts, and player count
+   *
+   * @returns The session status data or null if there was an error
+   */
   const fetchSessionStatus = useCallback(async () => {
     if (!sessionId || !token) {
       setError("Session ID or token is missing");
@@ -77,6 +93,11 @@ export const useSessionData = (
     }
   }, [sessionId, token]);
 
+  /**
+   * Fetches results for all players in the session
+   *
+   * @returns Array of player results or undefined if there was an error
+   */
   const fetchAllResults = useCallback(async () => {
     if (!sessionId || !token) {
       setError("Session ID or token is missing");
@@ -100,6 +121,12 @@ export const useSessionData = (
     }
   }, [sessionId, token]);
 
+  /**
+   * Fetches results for a specific player
+   *
+   * @param playerId - The ID of the player to fetch results for
+   * @returns The player's result data or null if there was an error
+   */
   const fetchPlayerResult = useCallback(
     async (playerId: string) => {
       if (!sessionId || !token || !playerId) {
@@ -123,7 +150,11 @@ export const useSessionData = (
   );
 
   /**
-   * Calculate scores for all players
+   * Calculates scores for all players based on their answers and question points
+   *
+   * @param results - Array of player results
+   * @param questions - Array of questions with point values
+   * @returns Array of player scores sorted by score
    */
   const calculatePlayerScores = useCallback(
     (results: PlayerResult[], questions: Question[]): PlayerScore[] => {
@@ -150,7 +181,12 @@ export const useSessionData = (
   );
 
   /**
-   * Calculate statistics for each question
+   * Calculates statistics for each question across all players
+   * Computes correct answer rates and average response times
+   *
+   * @param results - Array of player results
+   * @param numQuestions - Number of questions in the session
+   * @returns Object containing correctRates and avgTimes arrays
    */
   const calculateQuestionStats = useCallback(
     (results: PlayerResult[], numQuestions: number) => {
@@ -164,12 +200,15 @@ export const useSessionData = (
           const ans = player.answers[i];
           if (ans?.correct) correct++;
           if (ans?.questionStartedAt && ans?.answeredAt) {
+            // Calculate response time in seconds
             const start = new Date(ans.questionStartedAt).getTime();
             const end = new Date(ans.answeredAt).getTime();
             totalTime += (end - start) / 1000;
           }
         }
+        // Calculate percentage of correct answers (rounded to nearest integer)
         correctRates[i] = Math.round((correct / results.length) * 100);
+        // Calculate average response time (rounded to 2 decimal places)
         avgTimes[i] = +(totalTime / results.length).toFixed(2);
       }
 

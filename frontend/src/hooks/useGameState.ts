@@ -9,17 +9,30 @@ import {
 import type { Question } from "@/types";
 
 export interface GameState {
-  playerId: string;
-  question: Question | null;
-  started: boolean;
-  remainingTime: number | null;
-  selected: number[];
-  correctAnswers: number[] | null;
-  showResult: boolean;
-  sessionOver: boolean;
-  isLoading: boolean;
+  playerId: string; // Unique identifier for the player
+  question: Question | null; // Current question being displayed
+  started: boolean; // Whether the game has started
+  remainingTime: number | null; // Time remaining for the current question in seconds
+  selected: number[]; // Indexes of options selected by the player
+  correctAnswers: number[] | null; // Indexes of correct answers when revealed
+  showResult: boolean; // Whether to show the result of the current question
+  sessionOver: boolean; // Whether the game session has ended
+  isLoading: boolean; // Whether data is currently being loaded
 }
 
+/**
+ * Custom hook for managing game state and player interactions
+ *
+ * This hook handles:
+ * - Polling for game start and current question
+ * - Tracking remaining time for each question
+ * - Managing player selections and answer submissions
+ * - Fetching and displaying correct answers
+ * - Transitioning between questions
+ *
+ * @param playerId - The unique identifier for the player
+ * @returns An object containing game state, actions, and utility functions
+ */
 export function useGameState(playerId: string) {
   const [pollingStarted, setPollingStarted] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
@@ -35,7 +48,10 @@ export function useGameState(playerId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Initial polling to check if game has started
+  /**
+   * Initial polling effect to check if the game has started
+   * Polls the server every second to determine game status
+   */
   useEffect(() => {
     let isMounted = true;
     const interval = setInterval(async () => {
@@ -75,7 +91,10 @@ export function useGameState(playerId: string) {
     };
   }, [playerId]);
 
-  // Poll for current question once game has started
+  /**
+   * Secondary polling effect that activates once the game has started
+   * Continuously polls for the current question and calculates remaining time
+   */
   useEffect(() => {
     if (!pollingStarted) return;
 
@@ -102,6 +121,7 @@ export function useGameState(playerId: string) {
           console.log("Current Question:", newQuestion);
         }
 
+        // Calculate remaining time for the current question
         const startedAt = new Date(newQuestion.isoTimeLastQuestionStarted);
         const now = new Date();
         const elapsed = Math.floor(
@@ -124,7 +144,10 @@ export function useGameState(playerId: string) {
     };
   }, [pollingStarted, playerId, question, navigate, currentQuestionId]);
 
-  // Handle getting correct answers when time is up
+  /**
+   * Effect to handle fetching correct answers when time is up
+   * Periodically checks for answers until they become available
+   */
   useEffect(() => {
     if (remainingTime === 0 && question) {
       setShowResult(true);
@@ -163,6 +186,13 @@ export function useGameState(playerId: string) {
     }
   }, [remainingTime, question, playerId]);
 
+  /**
+   * Handles player selection of an answer option
+   * Manages different behavior based on question type (single, multiple, judgement)
+   * Submits answers to the server
+   *
+   * @param idx - The index of the selected option
+   */
   const handleOptionClick = async (idx: number) => {
     if (!question || remainingTime! <= 0) return;
 
@@ -203,11 +233,19 @@ export function useGameState(playerId: string) {
     }
   };
 
+  /**
+   * Calculates the progress percentage for the timer
+   * @returns Percentage of time remaining (0-100)
+   */
   const getProgressValue = () => {
     if (!remainingTime || !question) return 0;
     return (remainingTime / question.duration) * 100;
   };
 
+  /**
+   * Gets a human-readable label for the current question type
+   * @returns String representation of the question type
+   */
   const getQuestionTypeLabel = () => {
     if (!question) return "";
     switch (question.type) {
