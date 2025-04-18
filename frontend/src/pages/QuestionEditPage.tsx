@@ -179,4 +179,162 @@ const QuestionEditPage = () => {
             </select>
           </div>
 
-   
+          <div>
+            <Label className="block mb-2 font-medium">Question</Label>
+            <Input
+              value={question.question}
+              onChange={(e) => {
+                setError("");
+                handleChange("question", e.target.value);
+              }}
+              className="h-10 bg-white border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <Label className="block mb-2 font-medium">Duration (seconds)</Label>
+            <Input
+              type="number"
+              value={question.duration}
+              onChange={(e) => {
+                setError("");
+                handleChange("duration", Number(e.target.value));
+              }}
+              className="h-10 bg-white border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <Label className="block mb-2 font-medium">Points</Label>
+            <Input
+              type="number"
+              value={question.points}
+              onChange={(e) => {
+                setError("");
+                handleChange("points", Number(e.target.value));
+              }}
+              className="h-10 bg-white border-gray-300 rounded-lg"
+            />
+          </div>
+
+          <div>
+            <Label className="block mb-2 font-medium">
+              Media (URL or Upload)
+            </Label>
+            <Input
+              placeholder="Paste a video/image URL"
+              value={
+                typeof question.media === "string"
+                  ? question.media
+                  : question.media || ""
+              }
+              onChange={(e) => {
+                setError("");
+                handleChange("media", e.target.value);
+              }}
+              className="h-10 bg-white border-gray-300 rounded-lg mb-2"
+            />
+            <Label className="block mb-2 font-medium">Or Upload an Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleMediaUpload}
+              className="bg-white border-gray-300 rounded-lg file:mr-4 file:px-2 file:rounded-md file:border-0 file:bg-gray-100 file:text-gray-700"
+            />
+          </div>
+
+          <div>
+            <Label className="block mb-4 font-medium">Answers (2-6)</Label>
+            <div className="space-y-3">
+              {question.options.map((opt, i) => (
+                <div
+                  key={i}
+                  className="flex gap-2 items-center rounded-lg border border-gray-200 overflow-hidden bg-white p-2"
+                >
+                  <Input
+                    className="flex-1 border-0 h-12 shadow-none"
+                    value={opt.text}
+                    disabled={question.type === "judgement"}
+                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                    placeholder={`Option ${i + 1}`}
+                  />
+
+                  <div className="flex items-center mr-1">
+                    <button
+                      type="button"
+                      onClick={() => handleCorrectToggleWithRules(i)}
+                      className={`flex items-center justify-center w-12 h-12 rounded-md transition-all ${
+                        opt.isCorrect
+                          ? "bg-green-100 text-green-700"
+                          : "bg-white text-gray-400 hover:bg-gray-50"
+                      }`}
+                      title={
+                        opt.isCorrect ? "Correct answer" : "Mark as correct"
+                      }
+                    >
+                      {opt.isCorrect ? (
+                        <Check className="h-6 w-6" />
+                      ) : (
+                        <div className="h-6 w-6 border-2 border-gray-300 rounded-md" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteOption(i)}
+                      title="Delete option"
+                      disabled={question.options.length <= 2}
+                      className={`flex items-center justify-center w-12 h-12 text-gray-400 transition-all ${
+                        question.options.length <= 2
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:text-red-500"
+                      }`}
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {question.type !== "judgement" && question.options.length < 6 && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setError("");
+                  handleChange("options", [
+                    ...question.options,
+                    { text: "", isCorrect: false },
+                  ]);
+                }}
+                className="mt-3 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add Option
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-8 pt-4 border-t border-gray-200 flex gap-3">
+            <Button
+              onClick={handleSave}
+              className="bg-black text-white hover:bg-gray-800"
+            >
+              Save Changes
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                navigate(`/game/${gameId}`);
+              }}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default QuestionEditPage;
