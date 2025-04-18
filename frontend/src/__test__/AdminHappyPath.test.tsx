@@ -177,3 +177,195 @@ describe("Admin Happy Path E2E Test", () => {
       ).toBeInTheDocument();
     });
 
+    // Fill registration form
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "Test User" },
+    });
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /register/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem("token")).toBe("fake-token-123");
+    });
+    cleanup();
+
+    // STEP 2: Create a new game
+    Object.defineProperty(window, "location", {
+      value: { pathname: "/dashboard" },
+      writable: true,
+    });
+
+    // Mock empty games list initially
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ games: [] }),
+      } as Response)
+    );
+
+    // Create mock game for responses
+    const mockGame: Game = {
+      id: 1,
+      name: "Test Game",
+      owner: "test@example.com",
+      questions: [],
+      thumbnail: "",
+      oldSessions: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    // Mock game creation responses
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ games: [mockGame] }),
+      } as Response)
+    );
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({}),
+      } as Response)
+    );
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ games: [mockGame] }),
+      } as Response)
+    );
+
+    renderWithProviders(<App />, ["/dashboard"]);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/add game/i, { selector: "button span" })
+      ).toBeInTheDocument();
+    });
+
+    // Create game
+    fireEvent.click(screen.getByText(/add game/i, { selector: "button span" }));
+    fireEvent.change(screen.getByLabelText(/game name/i), {
+      target: { value: "Test Game" },
+    });
+    const createButton = screen
+      .getAllByRole("button")
+      .find((btn) => btn.textContent === "Create");
+    if (!createButton) throw new Error("Create button not found");
+    fireEvent.click(createButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Game")).toBeInTheDocument();
+    });
+
+    // STEP 3: Start game
+    const activeGame = { ...mockGame, active: 123 };
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ sessionId: "abc123" }),
+      } as Response)
+    );
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ games: [activeGame] }),
+      } as Response)
+    );
+
+    // Mock clipboard API
+    Object.assign(navigator, { clipboard: { writeText: vi.fn() } });
+
+    // Start game
+    fireEvent.click(screen.getByText(/start game/i));
+
+    // STEP 4: End game
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ active: null }),
+      } as Response)
+    );
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({ games: [{ ...mockGame, active: undefined }] }),
+      } as Response)
+    );
+
+    // End game
+    fireEvent.click(screen.getByTestId("game-status-button"));
+    cleanup();
+
+    // STEP 5: View sessions page
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () =>
+          Promise.resolve({
+            sessions: [{ id: 1, startedAt: "2023-01-01T00:00:00Z" }],
+          }),
+      } as Response)
+    );
+
+    Object.defineProperty(window, "location", {
+      value: { pathname: "/game/1/sessions" },
+      writable: true,
+    });
+    renderWithProviders(<App />, ["/game/1/sessions"]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/session results/i)).toBeInTheDocument();
+    });
+
+    // STEP 6: Logout
+    const logoutButton = screen.getByText(/logout/i);
+    fireEvent.click(logoutButton);
+    localStorage.removeItem("token");
+    expect(localStorage.getItem("token")).toBeNull();
+    cleanup();
+
+    // STEP 7: Login again
+    Object.defineProperty(window, "location", {
+      value: { pathname: "/login" },
+      writable: true,
+    });
+    vi.mocked(fetch).mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ token: "fake-token-123" }),
+      } as Response)
+    );
+
+    renderWithProviders(<App />, ["/login"]);
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^login$/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem("token")).toBe("fake-token-123");
+    });
+  });
+});
