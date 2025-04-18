@@ -7,7 +7,7 @@ import QuestionEditPage from "@/pages/QuestionEditPage";
 import PlayerSessionResultPage from "./pages/PlayerSessionResultPage";
 import JoinPage from "./pages/JoinPage";
 import GamingPage from "./pages/GamingPage";
-import PastGameSessions from "./pages/PastGameSessions";
+import PastGameSessions from "./pages/PastGameSessionsPage";
 import AdminSessionResultPage from "./pages/AdminSessionResultPage";
 
 const App = () => {
