@@ -1,46 +1,46 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import Dashboard from "@/pages/Dashboard";
-import GameEdit from "./pages/GameEdit";
-import QuestionEdit from "@/pages/QuestionEdit";
-import PlayerSessionResult from "./pages/PlayerSessionResult";
-import Play from "./pages/Play";
-import PlayerGame from "./pages/PlayerGame";
-import GameSessions from "./pages/GameSessions";
-import AdminSessionResult from "./pages/AdminSessionResult";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import DashboardPage from "@/pages/DashboardPage";
+import EditGamePage from "./pages/EditGamePage";
+import QuestionEditPage from "@/pages/QuestionEditPage";
+import PlayerSessionResultPage from "./pages/PlayerSessionResultPage";
+import JoinPage from "./pages/JoinPage";
+import GamingPage from "./pages/GamingPage";
+import PastGameSessions from "./pages/PastGameSessions";
+import AdminSessionResultPage from "./pages/AdminSessionResultPage";
 
-function App() {
+const App = () => {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
 
-      <Route path="/game/:gameId" element={<GameEdit />} />
-      <Route path="/game/:gameId/question/new" element={<QuestionEdit />} />
-      <Route path="/game/:gameId/sessions" element={<GameSessions />} />
+      <Route path="/game/:gameId" element={<EditGamePage />} />
+      <Route path="/game/:gameId/question/new" element={<QuestionEditPage />} />
+      <Route path="/game/:gameId/sessions" element={<PastGameSessions />} />
 
       <Route
         path="/game/:gameId/question/:questionId"
-        element={<QuestionEdit />}
+        element={<QuestionEditPage />}
       />
 
       <Route
         path="/:gameId/session/:sessionId"
-        element={<AdminSessionResult />}
+        element={<AdminSessionResultPage />}
       />
-      <Route path="/play" element={<Play />} />
-      <Route path="/play/:sessionId" element={<Play />} />
-      <Route path="/play/:sessionId/:playerId" element={<PlayerGame />} />
+      <Route path="/play" element={<JoinPage />} />
+      <Route path="/play/:sessionId" element={<JoinPage />} />
+      <Route path="/play/:sessionId/:playerId" element={<GamingPage />} />
       <Route
         path="/play/:sessionId/:playerId/Result"
-        element={<PlayerSessionResult />}
+        element={<PlayerSessionResultPage />}
       />
 
       <Route path="/" element={<Navigate to="/login" />} />
     </Routes>
   );
-}
+};
 
 export default App;
