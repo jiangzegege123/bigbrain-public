@@ -185,4 +185,31 @@ describe("Player Game Journey E2E Test", () => {
     });
 
     // Re-render to show feedback
+    renderWithProviders(<GamingPage />, "/play/776064/872491454");
 
+    // Verify feedback
+    expect(screen.getByText(/correct/i)).toBeInTheDocument();
+
+    // Show final results
+    Object.assign(mockGameState.state, {
+      started: false,
+      sessionOver: true,
+      question: null,
+    });
+
+    // Render and verify results page
+    renderWithProviders(
+      <PlayerSessionResultPage />,
+      "/play/776064/872491454/result"
+    );
+
+    // Updated assertions to use data-testid
+    expect(screen.getByText("Your Session Performance")).toBeInTheDocument();
+    expect(screen.getByTestId("final-score")).toHaveTextContent(
+      "Final Score: 100"
+    );
+    expect(screen.getByTestId("questions-answered")).toHaveTextContent(
+      "Questions Answered: 1/1"
+    );
+  });
+});
