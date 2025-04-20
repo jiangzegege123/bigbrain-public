@@ -181,7 +181,7 @@ const DashboardPage = () => {
               <button
                 onClick={() =>
                   navigator.clipboard.writeText(
-                    `http://localhost:8080/play/${sessionId}`
+                    `${process.env.DEPLOYED_URL}/play/${sessionId}`
                   )
                 }
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
