@@ -19,4 +19,8 @@ export default defineConfig({
   server: {
     port: 8080,
   },
+  // Skip TypeScript checking
+  esbuild: {
+    logOverride: { "this-is-undefined-in-esm": "silent" },
+  },
 });
