@@ -3,27 +3,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import EmptyState from "../components/ui/EmptyState";
 
-// Mock the Button component to simplify testing
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick: () => void;
-  }) => (
-    <button onClick={onClick} data-testid="mock-button">
-      {children}
-    </button>
-  ),
-}));
-
-// Mock Lucide icons
-vi.mock("lucide-react", () => ({
-  PlusCircle: () => <div data-testid="plus-circle-icon" />,
-  Gamepad2: () => <div data-testid="gamepad-icon" />,
-}));
-
 describe("EmptyState Component", () => {
   // Test 1: Renders with correct content
   it("renders with correct content", () => {
@@ -37,7 +16,7 @@ describe("EmptyState Component", () => {
     ).toBeInTheDocument();
 
     // Check for create button
-    expect(screen.getByTestId("mock-button")).toBeInTheDocument();
+    expect(screen.getByRole("button")).toBeInTheDocument();
     expect(screen.getByText("Create Game")).toBeInTheDocument();
   });
 
@@ -46,11 +25,11 @@ describe("EmptyState Component", () => {
     const handleCreate = vi.fn();
     render(<EmptyState onCreate={handleCreate} />);
 
-    // Check for Gamepad icon
-    expect(screen.getByTestId("gamepad-icon")).toBeInTheDocument();
-
-    // Check for Plus Circle icon (inside button)
-    expect(screen.getByTestId("plus-circle-icon")).toBeInTheDocument();
+    // Check for SVG icons
+    const svgElements = document.querySelectorAll("svg");
+    expect(svgElements).toHaveLength(2);
+    expect(svgElements[0]).toHaveClass("lucide-gamepad2");
+    expect(svgElements[1]).toHaveClass("lucide-circle-plus");
   });
 
   // Test 3: Calls the onCreate handler when button is clicked
@@ -58,7 +37,7 @@ describe("EmptyState Component", () => {
     const handleCreate = vi.fn();
     render(<EmptyState onCreate={handleCreate} />);
 
-    const button = screen.getByTestId("mock-button");
+    const button = screen.getByRole("button");
     fireEvent.click(button);
 
     expect(handleCreate).toHaveBeenCalledTimes(1);
@@ -100,7 +79,7 @@ describe("EmptyState Component", () => {
     expect(heading.tagName).toBe("H2");
 
     // Button should be accessible
-    const button = screen.getByTestId("mock-button");
+    const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
   });
 });
