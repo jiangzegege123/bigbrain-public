@@ -1,18 +1,7 @@
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import QuestionTimer from "../components/game/QuestionTimer";
-
-// Mock the Progress component because we're not testing shadcn components
-vi.mock("@/components/ui/progress", () => ({
-  Progress: ({ value, className }: { value: number; className: string }) => (
-    <div
-      data-testid="progress-bar"
-      data-value={value}
-      className={className}
-    ></div>
-  ),
-}));
 
 describe("QuestionTimer Component", () => {
   // Test 1: Renders correctly with remaining time
@@ -52,8 +41,10 @@ describe("QuestionTimer Component", () => {
       />
     );
 
-    const progressBar = screen.getByTestId("progress-bar");
-    expect(progressBar).toHaveAttribute("data-value", "50");
+    const progressIndicator = screen
+      .getByRole("progressbar")
+      .querySelector('[data-slot="progress-indicator"]');
+    expect(progressIndicator).toHaveStyle({ transform: "translateX(-50%)" });
   });
 
   // Test 4: Displays the correct question type label
@@ -111,8 +102,10 @@ describe("QuestionTimer Component", () => {
       />
     );
 
-    const progressBar = screen.getByTestId("progress-bar");
-    expect(progressBar).toHaveAttribute("data-value", "100");
+    const progressIndicator = screen
+      .getByRole("progressbar")
+      .querySelector('[data-slot="progress-indicator"]');
+    expect(progressIndicator).toHaveStyle({ transform: "translateX(-0%)" });
   });
 
   // Test 8: Edge case - Progress value at 0%
@@ -125,7 +118,9 @@ describe("QuestionTimer Component", () => {
       />
     );
 
-    const progressBar = screen.getByTestId("progress-bar");
-    expect(progressBar).toHaveAttribute("data-value", "0");
+    const progressIndicator = screen
+      .getByRole("progressbar")
+      .querySelector('[data-slot="progress-indicator"]');
+    expect(progressIndicator).toHaveStyle({ transform: "translateX(-100%)" });
   });
 });
