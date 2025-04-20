@@ -6,12 +6,7 @@ import { fetchGames, updateGames } from "@/api/game";
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  // In development, use localhost. In production, use the API_BASE_URL environment variable
-  const baseUrl = import.meta.env.DEV
-    ? "http://localhost:5005"
-    : import.meta.env.VITE_API_BASE_URL || "";
-
-  const res = await fetch(`${baseUrl}${endpoint}`, {
+  const res = await fetch(`http://localhost:5005${endpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
