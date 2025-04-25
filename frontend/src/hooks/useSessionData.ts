@@ -234,3 +234,46 @@ export const useSessionData = (
     setError,
   };
 };
+
+export function calculatePlayerScore(
+  answers: Answer[],
+  questionPoints: number[],
+  durations: number[]
+): number {
+  return answers.reduce((total, answer, idx) => {
+    if (!answer.correct) return total;
+    const answeredAt = new Date(answer.answeredAt).getTime();
+    const startedAt = new Date(answer.questionStartedAt).getTime();
+    const time = (answeredAt - startedAt) / 1000;
+
+    const base = (questionPoints[idx] || 100) / 2;
+    const bonus = ((durations[idx] - time) / durations[idx]) * base;
+    return total + Math.floor(base + bonus);
+  }, 0);
+}
+
+/**
+ * Calculate each question's score individually.
+ * Returns an array of scores per question, 0 if the answer was incorrect.
+ */
+export function calculateEachQuestionScore(
+  answers: Answer[],
+  questionPoints: number[],
+  durations: number[]
+): number[] {
+  return answers.map((answer, idx) => {
+    if (!answer.correct) return 0;
+
+    const answeredAt = new Date(answer.answeredAt).getTime();
+    const startedAt = new Date(answer.questionStartedAt).getTime();
+    const time = (answeredAt - startedAt) / 1000;
+
+    const duration = durations[idx] || 30;
+    const points = questionPoints[idx] || 100;
+
+    const base = points / 2;
+    const bonus = ((duration - time) / duration) * base;
+
+    return Math.floor(base + bonus);
+  });
+}
