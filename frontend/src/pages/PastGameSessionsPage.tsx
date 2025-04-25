@@ -5,7 +5,15 @@ import { fetchSingleGame } from "@/api/game";
 import { checkSessionStatus } from "@/api/session";
 import Navbar from "@/components/NavBar";
 import type { Game, AdminSessionResult } from "@/types";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
+import { Button } from "@/components/ui/button";
 interface SessionInfo {
   id: number;
   status: AdminSessionResult | null;
@@ -186,33 +194,43 @@ const PastGameSessionsPage = () => {
         {/* Mobile View */}
         <div className="md:hidden space-y-4">
           {sessions.map((session) => (
-            <div
-              key={session.id}
-              className="bg-white p-4 rounded-lg shadow-md flex flex-col space-y-2"
-            >
-              <div>
-                <span className="font-bold">Session ID:</span> {session.id}
-              </div>
-              <div>
-                <span className="font-bold">Date:</span> {session.date}
-              </div>
-              <div>
-                <span className="font-bold">Players:</span>{" "}
-                {session.playerCount}
-              </div>
-              <div>
-                <span className="font-bold">Questions:</span>{" "}
-                {session.status?.questions?.length || "N/A"}
-              </div>
-              <div>
-                <button
+            <Card key={session.id} className="bg-white shadow-md">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm text-muted-foreground">
+                    Session ID
+                  </Label>
+                  <span className="font-medium">{session.id}</span>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-2 space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm text-muted-foreground">Date</Label>
+                  <span>{session.date}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm text-muted-foreground">
+                    Players
+                  </Label>
+                  <span>{session.playerCount}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm text-muted-foreground">
+                    Questions
+                  </Label>
+                  <span>{session.status?.questions?.length || "N/A"}</span>
+                </div>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <Button
+                  variant="ghost"
+                  className="w-full text-indigo-600 hover:text-indigo-900 font-semibold"
                   onClick={() => handleViewSession(session.id)}
-                  className="mt-2 text-indigo-600 hover:text-indigo-900 font-semibold"
                 >
                   View Results
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </div>
