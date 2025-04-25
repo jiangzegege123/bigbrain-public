@@ -53,6 +53,28 @@ const PlayerSessionResultPage = () => {
     }, 0);
   }
 
+  function calculateEachQuestionScore(
+    answers: Answer[],
+    questionPoints: number[],
+    durations: number[]
+  ): number[] {
+    return answers.map((answer, idx) => {
+      if (!answer.correct) return 0;
+
+      const answeredAt = new Date(answer.answeredAt).getTime();
+      const startedAt = new Date(answer.questionStartedAt).getTime();
+      const time = (answeredAt - startedAt) / 1000;
+
+      const duration = durations[idx] || 30;
+      const points = questionPoints[idx] || 100;
+
+      const base = points / 2;
+      const bonus = ((duration - time) / duration) * base;
+
+      return Math.floor(base + bonus);
+    });
+  }
+
   // Initial fetch of session data
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +135,12 @@ const PlayerSessionResultPage = () => {
     questionDurations
   );
 
+  const points = calculateEachQuestionScore(
+    answers,
+    questionPoints,
+    questionDurations
+  );
+
   return (
     <div className="space-y-6 p-4">
       {/* Player Summary Card */}
@@ -137,7 +165,7 @@ const PlayerSessionResultPage = () => {
         <div className="grid gap-6 md:grid-cols-2">
           <PerformanceChart
             answers={answers}
-            questionPoints={questionPoints}
+            questionPoints={points}
             questionTexts={questionTexts}
           />
           <ResponseTimeChart answers={answers} questionTexts={questionTexts} />
