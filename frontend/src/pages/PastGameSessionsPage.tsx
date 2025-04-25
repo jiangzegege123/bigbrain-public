@@ -132,63 +132,89 @@ const PastGameSessionsPage = () => {
           </button>
         </div>
 
-        {sessions.length === 0 ? (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <p className="text-gray-600">
-              No past sessions found for this game.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Session ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Players
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Questions
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+        {/* Desktop View */}
+        <div className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Session ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Players
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Questions
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sessions.map((session) => (
+                <tr key={session.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {session.id}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {session.date}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {session.playerCount}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {session.status?.questions?.length || "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium">
+                    <button
+                      onClick={() => handleViewSession(session.id)}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      View Results
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sessions.map((session) => (
-                  <tr key={session.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {session.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {session.date}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {session.playerCount}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {session.status?.questions?.length || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleViewSession(session.id)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        View Results
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden space-y-4">
+          {sessions.map((session) => (
+            <div
+              key={session.id}
+              className="bg-white p-4 rounded-lg shadow-md flex flex-col space-y-2"
+            >
+              <div>
+                <span className="font-bold">Session ID:</span> {session.id}
+              </div>
+              <div>
+                <span className="font-bold">Date:</span> {session.date}
+              </div>
+              <div>
+                <span className="font-bold">Players:</span>{" "}
+                {session.playerCount}
+              </div>
+              <div>
+                <span className="font-bold">Questions:</span>{" "}
+                {session.status?.questions?.length || "N/A"}
+              </div>
+              <div>
+                <button
+                  onClick={() => handleViewSession(session.id)}
+                  className="mt-2 text-indigo-600 hover:text-indigo-900 font-semibold"
+                >
+                  View Results
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );
