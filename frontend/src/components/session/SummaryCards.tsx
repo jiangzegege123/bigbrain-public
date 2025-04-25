@@ -180,55 +180,37 @@ export const QuestionPerformanceTable = ({
     </Card>
   );
 };
+type PlayerScore = {
+  name: string;
+  score: number;
+  correctCount: number;
+};
 
 interface TopPlayersTableProps {
   players: { name: string; score: number; correctCount: number }[];
   title?: string;
-  answerTimes: number[][];
-  durations: number[];
-  questionPoints: number[];
+
+  playerScores: PlayerScore[];
 }
 
 export const TopPlayersTable = ({
   players,
   title = "Top Players",
-  answerTimes,
-  durations,
-  questionPoints,
+
+  playerScores,
 }: TopPlayersTableProps) => {
   if (!players.length) {
     return null;
   }
 
-  const sortedPlayerStats = players
-    .map((player, idx) => {
-      const times = answerTimes[idx];
-      let score = 0;
-
-      times.forEach((time, qIdx) => {
-        if (time === 0) return; // ❗
-
-        const duration = durations[qIdx] || 30;
-        const points = questionPoints[qIdx] || 100;
-
-        const base = points / 2;
-        const bonus = ((duration - time) / duration) * base;
-        score += Math.floor(base + bonus);
-      });
-
-      return {
-        name: player.name,
-        correctCount: player.correctCount,
-        score,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  const top5 = sortedPlayerStats.slice(0, 5);
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        <p>
+          Score = 50% base points + 50% × (1 - time taken / duration) — players
+          get full points only when answering correctly and quickly.
+        </p>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -241,7 +223,7 @@ export const TopPlayersTable = ({
               </tr>
             </thead>
             <tbody>
-              {top5.map((player, idx) => (
+              {playerScores.map((player, idx) => (
                 <tr key={idx} className="border-t">
                   <td className="p-2">{player.name}</td>
                   <td className="p-2">{player.score}</td>

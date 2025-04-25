@@ -27,7 +27,6 @@ const AdminSessionResultPage = () => {
     fetchSessionStatus,
     fetchAllResults,
     sessionResults,
-    calculatePlayerScores,
     calculateQuestionStats,
     isLoading,
   } = useSessionData(sessionId || "", token || "");
@@ -98,15 +97,46 @@ const AdminSessionResultPage = () => {
       return (answeredAt - startedAt) / 1000;
     });
   });
-  const questionPoints = sessionQuestions.map((q) => q.points || 100);
-
+  console.log("durations:", durations);
   console.log(answerTimes);
+  const questionPoints = sessionQuestions.map((q) => q.points);
+  console.log("questionPoints", questionPoints);
   console.log(durations);
   // Prepare top 5 players sorted by total points scored
-  const playerScores = calculatePlayerScores(sessionResults, sessionQuestions);
+  // const playerScores = calculatePlayerScores(sessionResults, sessionQuestions);
+  // const sortedPlayers = [...playerScores]
+  //   .sort((a, b) => b.score - a.score)
+  //   .slice(0, 5);
+
+  const playerScores = sessionResults.map((player, playerIdx) => {
+    let score = 0;
+    const times = answerTimes[playerIdx];
+    const answers = player.answers;
+
+    answers.forEach((answer, qIdx) => {
+      if (!answer.correct) return;
+
+      const duration = durations[qIdx] || 30;
+      const points = questionPoints[qIdx] || 100;
+      const timeTaken = times[qIdx];
+
+      const base = points / 2;
+      const bonus = ((duration - timeTaken) / duration) * base;
+      score += Math.floor(base + bonus);
+    });
+
+    return {
+      name: player.name,
+      score,
+      correctCount: answers.filter((a) => a.correct).length,
+    };
+  });
+
+  console.log("playerScores", playerScores);
   const sortedPlayers = [...playerScores]
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
+  console.log("sortedPlayers", sortedPlayers);
 
   // Compute per-question statistics
   const numQuestions = sessionResults[0]?.answers.length || 0;
@@ -133,11 +163,9 @@ const AdminSessionResultPage = () => {
 
       {/* Top 5 Players Table */}
       <TopPlayersTable
+        playerScores={sortedPlayers}
         players={sortedPlayers}
         title="Top 5 Players"
-        answerTimes={answerTimes}
-        durations={durations}
-        questionPoints={questionPoints}
       />
 
       {/* Charts: Correct Rate and Average Time */}
