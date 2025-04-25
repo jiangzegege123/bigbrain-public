@@ -16,8 +16,6 @@ const EditGamePage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  console.log(game);
-
   const loadGame = useCallback(async () => {
     try {
       const { games } = await fetchGames(token!);

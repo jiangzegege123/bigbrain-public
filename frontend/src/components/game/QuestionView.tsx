@@ -25,7 +25,6 @@ const QuestionView = ({
   getProgressValue,
   getQuestionTypeLabel,
 }: QuestionViewProps) => {
-  console.log(question);
   return (
     <div className="space-y-6">
       <div className="space-y-2">

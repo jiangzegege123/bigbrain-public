@@ -56,7 +56,7 @@ const PastGameSessionsPage = () => {
                   playerCount: sessionStatus.players?.length || 0,
                 };
               } catch (err) {
-                console.error(`Error fetching session ${sessionId}:`, err);
+                if (err instanceof Error) setError(err.message);
                 return {
                   id: sessionId,
                   status: null,
@@ -82,7 +82,6 @@ const PastGameSessionsPage = () => {
 
         setIsLoading(false);
       } catch (err) {
-        console.error("Error fetching game:", err);
         if (err instanceof Error) setError(err.message);
         setIsLoading(false);
       }
@@ -126,7 +125,7 @@ const PastGameSessionsPage = () => {
             {game?.name} - Past Sessions
           </h1>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
           >
             Back to Dashboard

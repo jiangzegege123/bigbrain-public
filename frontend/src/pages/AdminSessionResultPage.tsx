@@ -87,7 +87,6 @@ const AdminSessionResultPage = () => {
     );
   }
 
-  console.log("sessionResults", sessionResults);
   const durations = sessionQuestions.map((q) => q.duration);
   const answerTimes = sessionResults.map((player) => {
     return player.answers.map((answer) => {
@@ -97,11 +96,9 @@ const AdminSessionResultPage = () => {
       return (answeredAt - startedAt) / 1000;
     });
   });
-  console.log("durations:", durations);
-  console.log(answerTimes);
+
   const questionPoints = sessionQuestions.map((q) => q.points);
-  console.log("questionPoints", questionPoints);
-  console.log(durations);
+
   // Prepare top 5 players sorted by total points scored
   // const playerScores = calculatePlayerScores(sessionResults, sessionQuestions);
   // const sortedPlayers = [...playerScores]
@@ -132,11 +129,9 @@ const AdminSessionResultPage = () => {
     };
   });
 
-  console.log("playerScores", playerScores);
   const sortedPlayers = [...playerScores]
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
-  console.log("sortedPlayers", sortedPlayers);
 
   // Compute per-question statistics
   const numQuestions = sessionResults[0]?.answers.length || 0;
