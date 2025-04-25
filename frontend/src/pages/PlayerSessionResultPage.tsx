@@ -36,6 +36,23 @@ const PlayerSessionResultPage = () => {
     fetchAllResults,
   } = useSessionData(sessionId || "", token || "");
 
+  function calculatePlayerScore(
+    answers: Answer[],
+    questionPoints: number[],
+    durations: number[]
+  ): number {
+    return answers.reduce((total, answer, idx) => {
+      if (!answer.correct) return total;
+      const answeredAt = new Date(answer.answeredAt).getTime();
+      const startedAt = new Date(answer.questionStartedAt).getTime();
+      const time = (answeredAt - startedAt) / 1000;
+
+      const base = (questionPoints[idx] || 100) / 2;
+      const bonus = ((durations[idx] - time) / durations[idx]) * base;
+      return total + Math.floor(base + bonus);
+    }, 0);
+  }
+
   // Initial fetch of session data
   useEffect(() => {
     const fetchData = async () => {
@@ -45,7 +62,6 @@ const PlayerSessionResultPage = () => {
         const durations =
           sessionData.questions?.map((q: Question) => q.duration) || [];
         setQuestionDurations(durations);
-        console.log(durations);
         if (!sessionData.active && playerId) {
           // Get player's results
           const result = await fetchPlayerResult(playerId);
@@ -87,14 +103,15 @@ const PlayerSessionResultPage = () => {
     ? playerResult
     : (playerResult.answers as Answer[]);
 
-  // Calculate player's score
-  const playerScore = answers.reduce((total, answer, index) => {
-    return total + (answer.correct ? questionPoints[index] || 0 : 0);
-  }, 0);
-
   // Calculate correct answer count
   const correctCount = answers.filter((a) => a.correct).length;
   const totalQuestions = answers.length;
+
+  const result = calculatePlayerScore(
+    answers,
+    questionPoints,
+    questionDurations
+  );
 
   return (
     <div className="space-y-6 p-4">
@@ -129,10 +146,10 @@ const PlayerSessionResultPage = () => {
 
       {/* Performance Summary */}
       <PlayerPerformanceSummary
-        playerScore={playerScore}
         correctCount={correctCount}
         totalQuestions={totalQuestions}
         totalPlayers={totalPlayers}
+        result={result}
       />
     </div>
   );

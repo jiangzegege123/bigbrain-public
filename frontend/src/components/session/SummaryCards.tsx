@@ -53,18 +53,18 @@ export const PlayerSummaryCard = ({
   );
 };
 interface PlayerPerformanceSummaryProps {
-  playerScore: number;
   correctCount: number;
   totalQuestions: number;
   totalPlayers: number;
   title?: string;
+  result: number;
 }
 export const PlayerPerformanceSummary = ({
-  playerScore,
   correctCount,
   totalQuestions,
   totalPlayers,
   title = "Performance Summary",
+  result,
 }: PlayerPerformanceSummaryProps) => {
   const correctPercentage =
     totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
@@ -77,9 +77,9 @@ export const PlayerPerformanceSummary = ({
         <div className="space-y-4">
           {totalQuestions > 0 ? (
             <p className="text-lg">
-              You scored <span className="font-bold">{playerScore}</span> points
-              by answering <span className="font-bold">{correctCount}</span> out
-              of <span className="font-bold">{totalQuestions}</span> questions
+              You scored <span className="font-bold">{result}</span> points by
+              answering <span className="font-bold">{correctCount}</span> out of{" "}
+              <span className="font-bold">{totalQuestions}</span> questions
               correctly (<span className="font-bold">{correctPercentage}%</span>
               ).
             </p>
