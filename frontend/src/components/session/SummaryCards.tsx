@@ -1,17 +1,33 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Answer } from "@/hooks/useSessionData";
 interface PlayerSummaryCardProps {
-  playerScore: number;
   correctCount: number;
   totalQuestions: number;
   title?: string;
+  questionPoints: number[];
+  durations: number[];
+  answers: Answer[];
 }
 export const PlayerSummaryCard = ({
-  playerScore,
   correctCount,
   totalQuestions,
+  questionPoints,
+  durations,
+  answers,
   title = "Your Session Performance",
 }: PlayerSummaryCardProps) => {
+  const playerScore = answers.reduce((total, answer, idx) => {
+    if (!answer.correct) return total;
+    const duration = durations[idx] || 30;
+    const points = questionPoints[idx] || 100;
+    const answeredAt = new Date(answer.answeredAt).getTime();
+    const startedAt = new Date(answer.questionStartedAt).getTime();
+    const time = (answeredAt - startedAt) / 1000;
+
+    const base = points / 2;
+    const bonus = ((duration - time) / duration) * base;
+    return total + Math.floor(base + bonus);
+  }, 0);
   return (
     <Card>
       <CardHeader>
@@ -86,12 +102,14 @@ interface QuestionPerformanceTableProps {
   questionPoints: number[];
   questionTexts: string[];
   title?: string;
+  durations: number[];
 }
 export const QuestionPerformanceTable = ({
   answers,
   questionPoints,
   questionTexts,
   title = "Question Performance",
+  durations,
 }: QuestionPerformanceTableProps) => {
   const totalQuestions = answers.length;
   if (totalQuestions === 0) {
@@ -101,6 +119,11 @@ export const QuestionPerformanceTable = ({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        <p>
+          You earn up to half the points just by getting the question right, and
+          the quicker you answer, the more bonus points you get — so speed
+          matters!
+        </p>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -109,8 +132,8 @@ export const QuestionPerformanceTable = ({
               <tr>
                 <th className="p-2 text-left font-medium">Question</th>
                 <th className="p-2 text-left font-medium">Result</th>
-                <th className="p-2 text-left font-medium">Points</th>
                 <th className="p-2 text-left font-medium">Time (s)</th>
+                <th className="p-2 text-left font-medium">Points</th>
               </tr>
             </thead>
             <tbody>
@@ -126,6 +149,12 @@ export const QuestionPerformanceTable = ({
                 const questionText =
                   questionTexts[idx] || `Question ${idx + 1}`;
 
+                const score = Math.floor(
+                  questionPoints[idx] / 2 +
+                    ((questionPoints[idx] / 2) *
+                      (durations[idx] - responseTime)) /
+                      durations[idx]
+                );
                 return (
                   <tr key={idx} className="border-t">
                     <td className="p-2">{questionText}</td>
@@ -138,10 +167,9 @@ export const QuestionPerformanceTable = ({
                         {answer.correct ? "Correct" : "Incorrect"}
                       </span>
                     </td>
-                    <td className="p-2">
-                      {answer.correct ? questionPoints[idx] || 0 : 0}
-                    </td>
+
                     <td className="p-2">{responseTime}</td>
+                    <td className="p-2">{answer.correct ? score || 0 : 0}</td>
                   </tr>
                 );
               })}
@@ -156,16 +184,47 @@ export const QuestionPerformanceTable = ({
 interface TopPlayersTableProps {
   players: { name: string; score: number; correctCount: number }[];
   title?: string;
+  answerTimes: number[][];
+  durations: number[];
+  questionPoints: number[];
 }
 
 export const TopPlayersTable = ({
   players,
   title = "Top Players",
+  answerTimes,
+  durations,
+  questionPoints,
 }: TopPlayersTableProps) => {
   if (!players.length) {
     return null;
   }
 
+  const sortedPlayerStats = players
+    .map((player, idx) => {
+      const times = answerTimes[idx];
+      let score = 0;
+
+      times.forEach((time, qIdx) => {
+        if (time === 0) return; // ❗
+
+        const duration = durations[qIdx] || 30;
+        const points = questionPoints[qIdx] || 100;
+
+        const base = points / 2;
+        const bonus = ((duration - time) / duration) * base;
+        score += Math.floor(base + bonus);
+      });
+
+      return {
+        name: player.name,
+        correctCount: player.correctCount,
+        score,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  const top5 = sortedPlayerStats.slice(0, 5);
   return (
     <Card>
       <CardHeader>
@@ -182,7 +241,7 @@ export const TopPlayersTable = ({
               </tr>
             </thead>
             <tbody>
-              {players.map((player, idx) => (
+              {top5.map((player, idx) => (
                 <tr key={idx} className="border-t">
                   <td className="p-2">{player.name}</td>
                   <td className="p-2">{player.score}</td>

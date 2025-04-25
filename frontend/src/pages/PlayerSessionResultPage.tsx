@@ -11,7 +11,7 @@ import {
   PlayerPerformanceSummary,
   QuestionPerformanceTable,
 } from "@/components/session/SummaryCards";
-import { PlayerResult } from "@/types";
+import { PlayerResult, Question } from "@/types";
 
 const PlayerSessionResultPage = () => {
   // Extract sessionId and playerId from the URL
@@ -21,6 +21,7 @@ const PlayerSessionResultPage = () => {
   }>();
   const { token } = useAuth();
   const [playerResult, setPlayerResult] = useState<PlayerResult | null>(null);
+  const [questionDurations, setQuestionDurations] = useState<number[]>([]);
 
   // Use the shared hook for session data
   const {
@@ -41,6 +42,10 @@ const PlayerSessionResultPage = () => {
       // First get session status
       const sessionData = await fetchSessionStatus();
       if (sessionData) {
+        const durations =
+          sessionData.questions?.map((q: Question) => q.duration) || [];
+        setQuestionDurations(durations);
+        console.log(durations);
         if (!sessionData.active && playerId) {
           // Get player's results
           const result = await fetchPlayerResult(playerId);
@@ -95,9 +100,11 @@ const PlayerSessionResultPage = () => {
     <div className="space-y-6 p-4">
       {/* Player Summary Card */}
       <PlayerSummaryCard
-        playerScore={playerScore}
         correctCount={correctCount}
         totalQuestions={totalQuestions}
+        questionPoints={questionPoints}
+        durations={questionDurations}
+        answers={answers}
       />
 
       {/* Question Results */}
@@ -105,6 +112,7 @@ const PlayerSessionResultPage = () => {
         answers={answers}
         questionPoints={questionPoints}
         questionTexts={questionTexts}
+        durations={questionDurations}
       />
 
       {/* Charts: Score by Question and Response Time */}

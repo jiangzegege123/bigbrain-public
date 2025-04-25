@@ -53,18 +53,20 @@ const AdminSessionResultPage = () => {
   };
 
   // Loading state
-  if (isLoading) return (
-    <div className="p-4">
-      <div>Loading session results...</div>
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="p-4">
+        <div>Loading session results...</div>
+      </div>
+    );
 
   // Error state
-  if (error) return (
-    <div className="p-4">
-      <div className="text-red-500">Error: {error}</div>
-    </div>
-  );
+  if (error)
+    return (
+      <div className="p-4">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    );
 
   // UI when session is still active
   if (status) {
@@ -86,6 +88,20 @@ const AdminSessionResultPage = () => {
     );
   }
 
+  console.log("sessionResults", sessionResults);
+  const durations = sessionQuestions.map((q) => q.duration);
+  const answerTimes = sessionResults.map((player) => {
+    return player.answers.map((answer) => {
+      if (!answer.correct) return 0;
+      const answeredAt = new Date(answer.answeredAt).getTime();
+      const startedAt = new Date(answer.questionStartedAt).getTime();
+      return (answeredAt - startedAt) / 1000;
+    });
+  });
+  const questionPoints = sessionQuestions.map((q) => q.points || 100);
+
+  console.log(answerTimes);
+  console.log(durations);
   // Prepare top 5 players sorted by total points scored
   const playerScores = calculatePlayerScores(sessionResults, sessionQuestions);
   const sortedPlayers = [...playerScores]
@@ -116,7 +132,13 @@ const AdminSessionResultPage = () => {
       </div>
 
       {/* Top 5 Players Table */}
-      <TopPlayersTable players={sortedPlayers} title="Top 5 Players" />
+      <TopPlayersTable
+        players={sortedPlayers}
+        title="Top 5 Players"
+        answerTimes={answerTimes}
+        durations={durations}
+        questionPoints={questionPoints}
+      />
 
       {/* Charts: Correct Rate and Average Time */}
       <div className="grid gap-6 md:grid-cols-2">
