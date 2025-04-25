@@ -22,6 +22,12 @@ const DashboardPage = () => {
   const [activeGameId, setActiveGameId] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
   // Load all games when the user token changes
   useEffect(() => {
     loadGames(token!, setGames, setError);
