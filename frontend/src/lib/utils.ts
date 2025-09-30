@@ -5,8 +5,17 @@ import { fetchGames, updateGames } from "@/api/game";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
+const getBackendUrl = () => {
+  // 在生产环境中，如果部署了后端，使用部署的后端URL
+  // 否则使用本地开发环境的URL
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_BACKEND_URL || "http://localhost:5005";
+  }
+  return "http://localhost:5005";
+};
+
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const res = await fetch(`http://localhost:5005${endpoint}`, {
+  const res = await fetch(`${getBackendUrl()}${endpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

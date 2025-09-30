@@ -1,14 +1,15 @@
 import AsyncLock from "async-lock";
+import fs from "fs";
 import jwt from "jsonwebtoken";
 import { AccessError, InputError } from "./error";
-import { getStorage, saveStorage } from "./storage.js";
 
 const lock = new AsyncLock();
 
 const JWT_SECRET = "llamallamaduck";
+const DATABASE_FILE = "./database.json";
 
 /***************************************************************
-                     State Management
+                      State Management
 ***************************************************************/
 
 let admins = {};
@@ -17,22 +18,25 @@ let sessions = {};
 
 const sessionTimeouts = {};
 
-// 初始化数据
-const initData = () => {
-  const data = getStorage();
-  admins = data.admins || {};
-  games = data.games || {};
-  sessions = data.sessions || {};
-};
-
 const update = (admins, games, sessions) =>
   new Promise((resolve, reject) => {
     lock.acquire("saveData", () => {
       try {
-        saveStorage({ admins, games, sessions });
+        fs.writeFileSync(
+          DATABASE_FILE,
+          JSON.stringify(
+            {
+              admins,
+              games,
+              sessions,
+            },
+            null,
+            2
+          )
+        );
         resolve();
-      } catch (error) {
-        reject(error);
+      } catch {
+        reject(new Error("Writing to database failed"));
       }
     });
   });
@@ -45,8 +49,15 @@ export const reset = () => {
   sessions = {};
 };
 
-// 初始化数据
-initData();
+try {
+  const data = JSON.parse(fs.readFileSync(DATABASE_FILE));
+  admins = data.admins;
+  games = data.games;
+  sessions = data.sessions;
+} catch {
+  console.log("WARNING: No database found, create a new one");
+  save();
+}
 
 /***************************************************************
                       Helper Functions
@@ -190,10 +201,7 @@ export const updateGamesFromAdmin = ({ gamesArrayFromRequest, email }) =>
       // Convert array to object format and update
       const newGames = {};
       gamesArrayFromRequest.forEach((gameFromRequest) => {
-        const gameIdFromRequest =
-          gameFromRequest.id ||
-          gameFromRequest.gameId ||
-          gameFromRequest.gameID;
+        const gameIdFromRequest = gameFromRequest.id || gameFromRequest.gameId || gameFromRequest.gameID;
         // If game has an ID and it exists in admin's games, use that ID
         // Otherwise generate a new ID
         const gameId =
