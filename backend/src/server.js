@@ -166,12 +166,25 @@ app.get('/', (req, res) => res.redirect('/docs'));
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-const configData = JSON.parse(fs.readFileSync('../frontend/backend.config.json', 'utf8'));
-const port = 'BACKEND_PORT' in configData ? configData.BACKEND_PORT : 5000;
+// 检查是否在Vercel环境中
+const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
 
-const server = app.listen(port, () => {
-  console.log(`Backend is now listening on port ${port}!`);
-  console.log(`For API docs, navigate to http://localhost:${port}`);
-});
+if (!isVercel) {
+  // 本地开发环境 - 启动服务器
+  let port = 5005; // 默认端口
+  
+  try {
+    const configData = JSON.parse(fs.readFileSync('../frontend/backend.config.json', 'utf8'));
+    port = 'BACKEND_PORT' in configData ? configData.BACKEND_PORT : 5005;
+  } catch (error) {
+    console.log('无法读取配置文件，使用默认端口5005');
+  }
 
-export default server;
+  app.listen(port, () => {
+    console.log(`Backend is now listening on port ${port}!`);
+    console.log(`For API docs, navigate to http://localhost:${port}`);
+  });
+}
+
+// 导出app供Vercel使用
+export default app;

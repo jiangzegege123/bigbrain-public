@@ -28,7 +28,8 @@ const saveToFile = (data) => {
     fs.writeFileSync(DATABASE_FILE, JSON.stringify(data, null, 2));
   } catch (error) {
     console.error("Writing to database failed:", error);
-    throw new Error("Writing to database failed");
+    // 在无服务器环境中，文件写入可能失败，但不应该阻止程序运行
+    console.warn("Falling back to memory storage");
   }
 };
 
